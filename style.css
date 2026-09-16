@@ -32,3 +32,10 @@ canvas {
 .controls {
   font-size: 13px;
 }
+
+canvas {
+  display: block;
+  margin: 0 auto;
+  border: 3px solid #176b2c;
+  background-color: #176b2c;
+}
