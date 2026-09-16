@@ -19,6 +19,10 @@ canvas {
   background-color: lightblue;
 }
 
+.block {
+  background-color: #176b2c;
+}
+
 #message {
   font-size: 18px;
   height: 24px;
