@@ -24,11 +24,28 @@ Player.reset = function () {
   Player.vy = 0;
   Player.onGround = false;
   Player.angle = 0;
+  jumpsUsed: 0,      // how many jumps we've spent since we last landed  
+jumpWasDown: false // was the jump key already held last frame?  
+Player.jumpsUsed = 0;  
+Player.jumpWasDown = false;  
+
 };
 
 // Run one frame of player movement.
 Player.update = function () {
   var size = CONFIG.PLAYER_SIZE;
+  // --- 2. jump, including the extra mid-air jump ---------------------  
+var jumpJustPressed = Input.jump && !Player.jumpWasDown;  
+if (jumpJustPressed && Player.jumpsUsed < CONFIG.MAX_JUMPS) {  
+  Player.vy = -CONFIG.JUMP_POWER; // negative is UP  
+  Player.onGround = false;  
+  Player.jumpsUsed = Player.jumpsUsed + 1;  
+}  
+Player.jumpWasDown = Input.jump;  
+if (stepY > 0) {  
+  Player.onGround = true;  
+  Player.jumpsUsed = 0; // landing refills your jumps  
+}  
 
   // --- 1. decide how fast to go sideways ------------------------------
   Player.vx = 0;
@@ -44,7 +61,6 @@ Player.update = function () {
   // --- 3. gravity pulls down every single frame -----------------------
   Player.vy = Player.vy + CONFIG.GRAVITY;
   if (Player.vy > CONFIG.MAX_FALL) { Player.vy = CONFIG.MAX_FALL; }
-
   // --- 4. move sideways, one pixel at a time, stopping at walls -------
   var stepX = 0;
   if (Player.vx > 0) { stepX = 1; }
