@@ -33,7 +33,7 @@ var CONFIG = {
                       // 0 = dead center, 1 = right on the edge
 
   // --- rules ----------------------------------------------------------
-  START_LEVEL: 0      // which level in data/levels.json to load first
-  MAX_JUMPS: 2, // 1 = normal, 2 = double jump, 3 = triple  
+  START_LEVEL: 0,     // which level in data/levels.json to load first
+  MAX_JUMPS: 2        // 1 = normal, 2 = double jump, 3 = triple
 
 };

@@ -70,10 +70,10 @@ Draw.world = function () {
   }
 };
 
-// A solid block: white inside, black outline.
+// A solid block: green inside, black outline.
 Draw.block = function (x, y, size) {
   var ctx = Draw.ctx;
-  ctx.fillStyle = "#ffffff";
+  ctx.fillStyle = "#176b2c";
   ctx.fillRect(x, y, size, size);
   ctx.strokeStyle = "#000000";
   ctx.lineWidth = CONFIG.LINE_WIDTH;
@@ -134,5 +134,3 @@ Draw.player = function () {
   ctx.arc(dotX, dotY, 4, 0, Math.PI * 2);
   ctx.fill();
 };
-
-ctx.fillStyle = "#176b2c";

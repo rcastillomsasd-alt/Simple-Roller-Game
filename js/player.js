@@ -13,7 +13,9 @@ var Player = {
   vx: 0,           // speed left and right
   vy: 0,           // speed up and down
   onGround: false, // is the player standing on something right now?
-  angle: 0         // how far the circle has rolled, for drawing the dot
+  angle: 0,        // how far the circle has rolled, for drawing the dot
+  jumpsUsed: 0,    // how many jumps we've spent since we last landed
+  jumpWasDown: false // was the jump key already held last frame?
 };
 
 // Put the player back at the level's S square.
@@ -24,43 +26,32 @@ Player.reset = function () {
   Player.vy = 0;
   Player.onGround = false;
   Player.angle = 0;
-  jumpsUsed: 0,      // how many jumps we've spent since we last landed  
-jumpWasDown: false // was the jump key already held last frame?  
-Player.jumpsUsed = 0;  
-Player.jumpWasDown = false;  
-
+  Player.jumpsUsed = 0;
+  Player.jumpWasDown = false;
 };
 
 // Run one frame of player movement.
 Player.update = function () {
   var size = CONFIG.PLAYER_SIZE;
-  // --- 2. jump, including the extra mid-air jump ---------------------  
-var jumpJustPressed = Input.jump && !Player.jumpWasDown;  
-if (jumpJustPressed && Player.jumpsUsed < CONFIG.MAX_JUMPS) {  
-  Player.vy = -CONFIG.JUMP_POWER; // negative is UP  
-  Player.onGround = false;  
-  Player.jumpsUsed = Player.jumpsUsed + 1;  
-}  
-Player.jumpWasDown = Input.jump;  
-if (stepY > 0) {  
-  Player.onGround = true;  
-  Player.jumpsUsed = 0; // landing refills your jumps  
-}  
+  var jumpJustPressed = Input.jump && !Player.jumpWasDown;
 
   // --- 1. decide how fast to go sideways ------------------------------
   Player.vx = 0;
   if (Input.left)  { Player.vx = -CONFIG.MOVE_SPEED; }
   if (Input.right) { Player.vx =  CONFIG.MOVE_SPEED; }
 
-  // --- 2. jump, but only if we are standing on something --------------
-  if (Input.jump && Player.onGround) {
-    Player.vy = -CONFIG.JUMP_POWER;   // negative is UP
+  // --- 2. jump, including the extra mid-air jump ---------------------
+  if (jumpJustPressed && (Player.onGround || Player.jumpsUsed < CONFIG.MAX_JUMPS)) {
+    Player.vy = -CONFIG.JUMP_POWER; // negative is UP
     Player.onGround = false;
+    Player.jumpsUsed = Player.jumpsUsed + 1;
   }
+  Player.jumpWasDown = Input.jump;
 
   // --- 3. gravity pulls down every single frame -----------------------
   Player.vy = Player.vy + CONFIG.GRAVITY;
   if (Player.vy > CONFIG.MAX_FALL) { Player.vy = CONFIG.MAX_FALL; }
+
   // --- 4. move sideways, one pixel at a time, stopping at walls -------
   var stepX = 0;
   if (Player.vx > 0) { stepX = 1; }
@@ -81,7 +72,7 @@ if (stepY > 0) {
 
   for (var j = 0; j < Math.abs(Player.vy); j++) {
     if (Collide.hitsSolid(Player.x, Player.y + stepY, size, size)) {
-      if (stepY > 0) { Player.onGround = true; }  // we landed on something
+      if (stepY > 0) { Player.onGround = true; Player.jumpsUsed = 0; } // landed on something
       Player.vy = 0;
       break;
     }
