@@ -2,28 +2,47 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>ROLLER</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#090b18">
+  <title>NEON ROLLER // MOMENTUM</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
+  <main class="shell">
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">MOMENTUM PROTOCOL // 01</p>
+        <h1>NEON <span>ROLLER</span></h1>
+      </div>
+      <div class="status"><i></i><span id="statusText">SYSTEM ONLINE</span></div>
+    </header>
 
-  <h1>ROLLER</h1>
+    <section class="game-wrap" aria-label="Neon Roller game">
+      <canvas id="game" width="960" height="540"></canvas>
+      <div class="hud">
+        <div class="hud-card"><small>SECTOR</small><strong id="levelName">BOOTING</strong></div>
+        <div class="hud-card"><small>SHARDS</small><strong><span id="score">000</span> <b>/</b> <span id="total">000</span></strong></div>
+        <div class="hud-card"><small>TIME</small><strong id="time">00:00</strong></div>
+      </div>
+      <div id="message" class="message">Loading world...</div>
+    </section>
 
-  <canvas id="game" width="800" height="400"></canvas>
+    <nav class="controls" aria-label="Controls">
+      <span><kbd>A</kbd><kbd>D</kbd> / <kbd>←</kbd><kbd>→</kbd> MOVE</span>
+      <span><kbd>SPACE</kbd> JUMP</span>
+      <span><kbd>R</kbd> RESET</span>
+      <span class="secret-hint">??? <b>TYPE HIDDEN</b> ???</span>
+    </nav>
 
-  <p id="message">Loading...</p>
+    <div class="touch-controls">
+      <button data-key="left" aria-label="Move left">◀</button>
+      <button data-key="jump" aria-label="Jump">●</button>
+      <button data-key="right" aria-label="Move right">▶</button>
+    </div>
 
-  <p class="controls">
-    LEFT / RIGHT arrow to roll &nbsp;&middot;&nbsp;
-    SPACE or UP arrow to jump &nbsp;&middot;&nbsp;
-    R to restart
-  </p>
+    <p class="footer">ROLL WITH THE FLOW <span>•</span> COLLECT EVERY SHARD <span>•</span> REACH THE GATE</p>
+  </main>
 
-  <!-- ===================================================================
-       THE ORDER OF THESE FILES MATTERS. Each one uses the ones above it.
-       If you add a new file, add it to this list too, in the right spot.
-       =================================================================== -->
   <script src="js/config.js"></script>
   <script src="js/input.js"></script>
   <script src="js/level.js"></script>
@@ -32,6 +51,5 @@
   <script src="js/draw.js"></script>
   <script src="js/game.js"></script>
   <script src="js/main.js"></script>
-
 </body>
 </html>

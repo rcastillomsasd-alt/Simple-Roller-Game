@@ -1,33 +1,18 @@
 {
-  "_comment": "A level is just a list of piece names in order, left to right. Every name you use here must exist in data/pieces.json. Add, remove, or reorder pieces to build a new level. Every level should start with 'start' and end with 'finish'.",
-
+  "_comment": "Neon Roller sectors. G marks a collectible shard, and the secret sector is unlocked by typing HIDDEN.",
   "levels": [
     {
-      "name": "Level 1 - Warm Up",
-      "pieces": [
-        "start",
-        "flat",
-        "gap",
-        "flat",
-        "spikes",
-        "platform",
-        "stairs",
-        "finish"
-      ]
+      "name": "01 // FIRST LIGHT",
+      "pieces": ["start", "flat", "gem", "gap", "flat", "spikes", "platform", "stairs", "finish"]
     },
     {
-      "name": "Level 2 - Watch Your Step",
-      "pieces": [
-        "start",
-        "spikes",
-        "gap",
-        "step",
-        "spikepit",
-        "platform",
-        "gap",
-        "flat",
-        "finish"
-      ]
+      "name": "02 // PRESSURE DROP",
+      "pieces": ["start", "spikes", "gem", "gap", "step", "spikepit", "platform", "gap", "flat", "finish"]
+    },
+    {
+      "name": "?? // NULL SPACE",
+      "secret": true,
+      "pieces": ["start", "secret", "gap", "spikes", "gem", "stairs", "spikepit", "platform", "gem", "boost", "finish"]
     }
   ]
 }
