@@ -1,87 +1,13 @@
-var Game = {
-  mode: "playing",
-  levelNumber: 0,
-  score: 0,
-  startTime: 0,
-  unlockedSecret: false
-};
-
-Game.startLevel = function (levelNumber) {
-  Game.levelNumber = levelNumber;
-  Level.build(levelNumber);
-  Player.reset();
-  Game.mode = "playing";
-  Game.score = 0;
-  Game.startTime = performance.now();
-  Game.showMessage(Level.secret ? "SECRET SECTOR // NO MAP DATA" : "");
-  Game.updateHud();
-};
-
-Game.unlockSecret = function () {
-  if (Game.unlockedSecret) { return; }
-  Game.unlockedSecret = true;
-  Game.showMessage("SECRET LEVEL UNLOCKED // LOADING...");
-  Game.startLevel(2);
-};
-
-Game.showMessage = function (text) {
-  document.getElementById("message").textContent = text;
-};
-
-Game.updateHud = function () {
-  document.getElementById("levelName").textContent = Level.name;
-  document.getElementById("score").textContent = String(Game.score).padStart(3, "0");
-  document.getElementById("total").textContent = String(Level.collectibles.length).padStart(3, "0");
-  document.getElementById("statusText").textContent = Level.secret ? "SIGNAL UNKNOWN" : "SYSTEM ONLINE";
-  document.getElementById("time").textContent = Game.formatTime((performance.now() - Game.startTime) / 1000);
-};
-
-Game.formatTime = function (seconds) {
-  return String(Math.floor(seconds / 60)).padStart(2, "0") + ":" + String(Math.floor(seconds % 60)).padStart(2, "0");
-};
-
-Game.update = function () {
-  if (Input.restart) {
-    Game.startLevel(Game.levelNumber);
-    Input.restart = false;
-    return;
-  }
-
-  if (Game.mode !== "playing") { return; }
-
-  Player.update();
-
-  Level.collectibles.forEach(function (gem) {
-    if (!gem.got && Math.hypot(Player.x + 15 - gem.x, Player.y + 15 - gem.y) < 24) {
-      gem.got = true;
-      Game.score += 100;
-    }
-  });
-
-  if (Player.isDead()) {
-    Game.mode = "dead";
-    Game.showMessage("SIGNAL LOST // PRESS R TO REBOOT");
-    Game.updateHud();
-    return;
-  }
-
-  if (Player.hasWon()) {
-    Game.mode = "won";
-    if (Level.shardsLeft() === 0) {
-      Game.showMessage("PERFECT RUN // PRESS R FOR NEXT SECTOR");
-    } else {
-      Game.showMessage("GATE OPEN // PRESS R TO RESTART");
-    }
-    Game.updateHud();
-    return;
-  }
-
-  Game.updateHud();
-};
-
-Game.loop = function () {
-  Game.update();
-  Draw.updateCamera();
-  Draw.everything();
-  window.requestAnimationFrame(Game.loop);
-};
+var Game={mode:"playing",levelNumber:0,score:0,startTime:0,unlockedSecret:false,bullets:[],boss:null,lastShot:0,exitRequested:false};
+var AudioFX={ctx:null,ready:function(){if(!AudioFX.ctx)AudioFX.ctx=new(window.AudioContext||window.webkitAudioContext)();if(AudioFX.ctx.state==='suspended')AudioFX.ctx.resume();},tone:function(freq,duration,type,volume){try{AudioFX.ready();var o=AudioFX.ctx.createOscillator(),g=AudioFX.ctx.createGain();o.type=type||'square';o.frequency.value=freq;g.gain.setValueAtTime(volume||.04,AudioFX.ctx.currentTime);g.gain.exponentialRampToValueAtTime(.001,AudioFX.ctx.currentTime+duration);o.connect(g);g.connect(AudioFX.ctx.destination);o.start();o.stop(AudioFX.ctx.currentTime+duration);}catch(e){}},shoot:function(){AudioFX.tone(520,.07,'square',.035);},hurt:function(){AudioFX.tone(110,.22,'sawtooth',.07);},bossHit:function(){AudioFX.tone(180,.1,'triangle',.06);},bossDown:function(){AudioFX.tone(70,.5,'sawtooth',.08);setTimeout(function(){AudioFX.tone(420,.3,'square',.05);},100);}};
+Game.startLevel=function(n){Game.levelNumber=n;Level.build(n);Player.reset();Game.bullets=[];Game.boss=Level.secret?{x:Level.pixelWidth()-220,y:250,health:CONFIG.BOSS_HEALTH,shotClock:0,flash:0}:null;Game.mode="playing";Game.score=0;Game.startTime=performance.now();Game.showMessage(Level.secret?"SECRET SECTOR // DEFEAT THE MINI BOSS":"");Game.updateHud();};
+Game.unlockSecret=function(){if(Game.unlockedSecret)return;Game.unlockedSecret=true;Game.startLevel(2);Game.showMessage("SECRET LEVEL UNLOCKED // DEFEAT THE MINI BOSS");};
+Game.exitSecret=function(){if(!Level.secret)return;Game.startLevel(0);Game.showMessage("RETURNED TO MAIN SECTOR");};
+Game.showMessage=function(text){document.getElementById("message").textContent=text;};
+Game.updateHud=function(){document.getElementById("levelName").textContent=Level.name;document.getElementById("score").textContent=String(Game.score).padStart(3,"0");document.getElementById("total").textContent=String(Level.collectibles.length).padStart(3,"0");document.getElementById("statusText").textContent=Level.secret?"BOSS SIGNAL":"SYSTEM ONLINE";document.getElementById("time").textContent=Game.formatTime((performance.now()-Game.startTime)/1000);var h=document.getElementById("bossHud");h.style.display=Game.boss?'block':'none';if(Game.boss)document.getElementById("bossHealth").textContent=Game.boss.health;document.getElementById("exitSecret").style.display=Level.secret?'inline-block':'none';};
+Game.formatTime=function(s){return String(Math.floor(s/60)).padStart(2,"0")+":"+String(Math.floor(s%60)).padStart(2,"0");};
+Game.fire=function(){if(Game.mode!=="playing")return;var now=performance.now();if(now-Game.lastShot<180)return;Game.lastShot=now;AudioFX.shoot();Game.bullets.push({x:Player.x+CONFIG.PLAYER_SIZE,y:Player.y+13,vx:10,life:0});};
+Game.updateBullets=function(){for(var i=Game.bullets.length-1;i>=0;i--){var b=Game.bullets[i];b.x+=b.vx;b.life++;if(Game.boss&&Math.abs(b.x-Game.boss.x)<30&&Math.abs(b.y-(Game.boss.y+35))<45){Game.boss.health--;Game.boss.flash=8;Game.score+=250;AudioFX.bossHit();Game.bullets.splice(i,1);if(Game.boss.health<=0){Game.boss=null;Game.score+=1000;AudioFX.bossDown();Game.showMessage("BOSS DELETED // FIND THE EXIT GATE");}continue;}if(b.life>100)Game.bullets.splice(i,1);}};
+Game.updateBoss=function(){if(!Game.boss)return;var b=Game.boss;b.shotClock++;b.flash=Math.max(0,b.flash-1);b.y=235+Math.sin(b.shotClock/35)*55;if(b.shotClock%110===0){Game.bullets.push({x:b.x,y:b.y+35,vx:-3.2,enemy:true,life:0});AudioFX.tone(95,.12,'sawtooth',.035);}if(Math.abs(Player.x-b.x)<48&&Math.abs(Player.y-b.y)<70){if(Player.takeDamage()){Game.mode="dead";Game.showMessage("BOSS HIT // PRESS R TO REBOOT");}}};
+Game.update=function(){if(Input.restart){Game.startLevel(Game.levelNumber);Input.restart=false;return;}if(Game.mode!=="playing")return;Player.update();Game.updateBullets();Game.updateBoss();for(var i=Game.bullets.length-1;i>=0;i--){var b=Game.bullets[i];if(b.enemy&&Math.abs(b.x-(Player.x+15))<24&&Math.abs(b.y-(Player.y+15))<24){Game.bullets.splice(i,1);if(Player.takeDamage()){Game.mode="dead";Game.showMessage("BOSS BLAST // PRESS R TO REBOOT");}}}Level.collectibles.forEach(function(g){if(!g.got&&Math.hypot(Player.x+15-g.x,Player.y+15-g.y)<24){g.got=true;Game.score+=100;}});if(Player.isDead()){Game.mode="dead";Game.showMessage("SIGNAL LOST // PRESS R TO REBOOT");}else if(Player.hasWon()&&(!Level.secret||!Game.boss)){Game.mode="won";Game.showMessage(Level.secret?"NULL SPACE CLEARED // PRESS R TO RESTART":"PERFECT RUN // PRESS R FOR NEXT SECTOR");}Game.updateHud();};
+Game.loop=function(){Game.update();Draw.updateCamera();Draw.everything();requestAnimationFrame(Game.loop);};

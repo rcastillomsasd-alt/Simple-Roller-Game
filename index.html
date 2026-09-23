@@ -23,6 +23,7 @@
         <div class="hud-card"><small>SECTOR</small><strong id="levelName">BOOTING</strong></div>
         <div class="hud-card"><small>SHARDS</small><strong><span id="score">000</span> <b>/</b> <span id="total">000</span></strong></div>
         <div class="hud-card"><small>TIME</small><strong id="time">00:00</strong></div>
+        <div class="hud-card boss-hud" id="bossHud"><small>CORE HP</small><strong><span id="bossHealth">000</span> / 3</strong></div>
       </div>
       <div id="message" class="message">Loading world...</div>
     </section>
@@ -30,6 +31,7 @@
     <nav class="controls" aria-label="Controls">
       <span><kbd>A</kbd><kbd>D</kbd> / <kbd>←</kbd><kbd>→</kbd> MOVE</span>
       <span><kbd>SPACE</kbd> JUMP</span>
+      <span><kbd>X</kbd> / <kbd>CLICK</kbd> FIRE GUN</span>
       <span><kbd>R</kbd> RESET</span>
       <span class="secret-hint">??? <b>TYPE HIDDEN</b> ???</span>
     </nav>
@@ -38,7 +40,9 @@
       <button data-key="left" aria-label="Move left">◀</button>
       <button data-key="jump" aria-label="Jump">●</button>
       <button data-key="right" aria-label="Move right">▶</button>
+      <button id="fireButton" aria-label="Fire">✦</button>
     </div>
+    <button id="exitSecret" class="exit-secret" type="button">↩ EXIT HIDDEN LEVEL</button>
 
     <p class="footer">ROLL WITH THE FLOW <span>•</span> COLLECT EVERY SHARD <span>•</span> REACH THE GATE</p>
   </main>
