@@ -1,94 +1,28 @@
-/* Feature layer: campaign progression, first-sector slimes, menu, settings, and music. */
-var Slimes = { list: [], nextSpawn: 0 };
-Slimes.reset = function () { Slimes.list = []; Slimes.nextSpawn = 0; };
-Slimes.spawn = function () {
-  if (Game.levelNumber !== 0 || Slimes.list.length >= 5) return;
-  var maxX = Math.max(160, Level.pixelWidth() - 100);
-  var x = Math.min(maxX, Player.x + 420 + Slimes.list.length * 180);
-  Slimes.list.push({ x:x, y:300, health:1, hit:0 });
-};
-Slimes.update = function () {
-  if (Game.levelNumber !== 0 || Game.mode !== "playing") return;
-  if (Slimes.list.length < 3 && Player.x > 280 && performance.now() > Slimes.nextSpawn) {
-    Slimes.spawn();
-    Slimes.nextSpawn = performance.now() + 1600;
-  }
-  for (var i = Slimes.list.length - 1; i >= 0; i--) {
-    var s = Slimes.list[i];
-    s.x += s.x < Player.x ? 0.7 : -0.25;
-    s.hit = Math.max(0, s.hit - 1);
-    if (Math.abs(s.x - (Player.x + 15)) < 34 && Math.abs(s.y + 25 - (Player.y + 15)) < 45 && Player.takeDamage()) {
-      Game.mode = "dead";
-      Game.showMessage("SLIME SWARM // PRESS R TO REBOOT");
-    }
-  }
-};
-Slimes.draw = function (c) {
-  Slimes.list.forEach(function (s) {
-    c.save(); c.translate(s.x, s.y); c.fillStyle=s.hit ? "#fff" : "#65ff75"; c.shadowColor="#65ff75"; c.shadowBlur=18;
-    c.beginPath(); c.arc(0,25,22,Math.PI,0); c.lineTo(22,35); c.lineTo(-22,35); c.closePath(); c.fill();
-    c.fillStyle="#07121b"; c.shadowBlur=0; c.fillRect(-10,17,5,7); c.fillRect(6,17,5,7); c.restore();
-  });
-};
+/* Feature layer: campaign progression, first-sector slimes, menu, settings, music, and animated menu art. */
+var Slimes={list:[],nextSpawn:0};
+Slimes.reset=function(){Slimes.list=[];Slimes.nextSpawn=0;};
+Slimes.spawn=function(){if(Game.levelNumber!==0||Slimes.list.length>=5)return;var maxX=Math.max(160,Level.pixelWidth()-100);Slimes.list.push({x:Math.min(maxX,Player.x+420+Slimes.list.length*180),y:300,health:1,hit:0});};
+Slimes.update=function(){if(Game.levelNumber!==0||Game.mode!=="playing")return;if(Slimes.list.length<3&&Player.x>280&&performance.now()>Slimes.nextSpawn){Slimes.spawn();Slimes.nextSpawn=performance.now()+1600;}for(var i=Slimes.list.length-1;i>=0;i--){var s=Slimes.list[i];s.x+=s.x<Player.x?.7:-.25;s.hit=Math.max(0,s.hit-1);if(Math.abs(s.x-(Player.x+15))<34&&Math.abs(s.y+25-(Player.y+15))<45&&Player.takeDamage()){Game.mode="dead";Game.showMessage("SLIME SWARM // PRESS R TO REBOOT");}}};
+Slimes.draw=function(c){Slimes.list.forEach(function(s){c.save();c.translate(s.x,s.y);c.fillStyle=s.hit?"#fff":"#65ff75";c.shadowColor="#65ff75";c.shadowBlur=18;c.beginPath();c.arc(0,25,22,Math.PI,0);c.lineTo(22,35);c.lineTo(-22,35);c.closePath();c.fill();c.fillStyle="#07121b";c.shadowBlur=0;c.fillRect(-10,17,5,7);c.fillRect(6,17,5,7);c.restore();});};
 
-var MenuMusic = { timer:null, step:0, active:false };
-MenuMusic.start = function () {
-  if (MenuMusic.active) return;
-  AudioFX.ready();
-  if (!AudioFX.ctx) return;
-  MenuMusic.active = true; MenuMusic.step = 0;
-  var notes = [220,277.18,329.63,277.18,246.94,293.66,369.99,293.66];
-  MenuMusic.timer = setInterval(function () {
-    if (!MenuMusic.active || !AudioFX.ctx) return;
-    AudioFX.tone(notes[MenuMusic.step++ % notes.length], 0.18, "triangle", 0.018);
-  }, 240);
-};
-MenuMusic.stop = function () { MenuMusic.active = false; if (MenuMusic.timer) { clearInterval(MenuMusic.timer); MenuMusic.timer = null; } };
+var MenuMusic={timer:null,step:0,active:false};
+MenuMusic.start=function(){if(MenuMusic.active)return;AudioFX.ready();if(!AudioFX.ctx)return;MenuMusic.active=true;MenuMusic.step=0;var notes=[220,277.18,329.63,277.18,246.94,293.66,369.99,293.66];MenuMusic.timer=setInterval(function(){if(MenuMusic.active&&AudioFX.ctx)AudioFX.tone(notes[MenuMusic.step++%notes.length],.18,"triangle",.018);},240);};
+MenuMusic.stop=function(){MenuMusic.active=false;if(MenuMusic.timer){clearInterval(MenuMusic.timer);MenuMusic.timer=null;}};
+AudioFX.masterVolume=Number(localStorage.getItem("neonRollerMasterVolume"));if(!isFinite(AudioFX.masterVolume))AudioFX.masterVolume=.7;
+AudioFX.gunVolume=Number(localStorage.getItem("neonRollerGunVolume"));if(!isFinite(AudioFX.gunVolume))AudioFX.gunVolume=.8;
+var originalTone=AudioFX.tone;AudioFX.tone=function(freq,duration,type,volume){originalTone.call(AudioFX,freq,duration,type,(volume===undefined?.04:volume)*AudioFX.masterVolume);};AudioFX.shoot=function(){AudioFX.tone(520,.07,"square",.035*AudioFX.gunVolume);};
 
-AudioFX.masterVolume = Number(localStorage.getItem("neonRollerMasterVolume")) || 0.7;
-AudioFX.gunVolume = Number(localStorage.getItem("neonRollerGunVolume")) || 0.8;
-var originalTone = AudioFX.tone;
-AudioFX.tone = function (freq, duration, type, volume) {
-  originalTone.call(AudioFX, freq, duration, type, (volume === undefined ? 0.04 : volume) * AudioFX.masterVolume);
-};
-AudioFX.shoot = function () { AudioFX.tone(520, .07, "square", .035 * AudioFX.gunVolume); };
+var originalStartLevel=Game.startLevel;Game.startLevel=function(n,resetScore){if(!Level.levels||!Level.levels[n])return;originalStartLevel.call(Game,n,resetScore);Slimes.reset();if(Game.boss&&Level.secret){Game.boss.health=Math.max(CONFIG.BOSS_HEALTH,6);Game.boss.shotClock=-50;}};
+var originalUpdate=Game.update;Game.update=function(){if(Game.mode==="menu")return;originalUpdate.call(Game);Slimes.update();if(Game.mode==="won"&&Game.levelNumber>=1&&Game.levelNumber<7&&!Game.campaignTransitioned){Game.campaignTransitioned=true;var next=Game.levelNumber+1;Game.startLevel(next,false);Game.showMessage("SECTOR CLEAR // TELEPORTING TO "+Level.name);}};
+var originalDraw=Draw.everything;Draw.everything=function(){originalDraw.call(Draw);if(Game.mode==="playing"&&Game.levelNumber===0)Slimes.draw(Draw.ctx);};
 
-var originalStartLevel = Game.startLevel;
-Game.startLevel = function (n, resetScore) {
-  if (!Level.levels || !Level.levels[n]) return;
-  originalStartLevel.call(Game, n, resetScore);
-  Slimes.reset();
-  if (Game.boss && Level.secret) { Game.boss.health = CONFIG.BOSS_HEALTH; Game.boss.shotClock = -50; }
-};
-var originalUpdate = Game.update;
-Game.update = function () {
-  if (Game.mode === "menu") return;
-  originalUpdate.call(Game);
-  Slimes.update();
-  if (Game.mode === "won" && Game.levelNumber >= 1 && Game.levelNumber < 7 && !Game.campaignTransitioned) {
-    Game.campaignTransitioned = true;
-    var next = Game.levelNumber + 1;
-    Game.startLevel(next, false);
-    Game.showMessage("SECTOR CLEAR // TELEPORTING TO " + Level.name);
-  }
-};
-var originalDraw = Draw.everything;
-Draw.everything = function () { originalDraw.call(Draw); if (Game.mode === "playing" && Game.levelNumber === 0) Slimes.draw(Draw.ctx); };
+var MenuArt={canvas:null,ctx:null,frame:0};
+MenuArt.setup=function(){MenuArt.canvas=document.getElementById("menuBackdrop");if(MenuArt.canvas){MenuArt.ctx=MenuArt.canvas.getContext("2d");MenuArt.resize();window.addEventListener("resize",MenuArt.resize);MenuArt.loop();}};
+MenuArt.resize=function(){if(!MenuArt.canvas)return;var d=window.devicePixelRatio||1;MenuArt.canvas.width=MenuArt.canvas.clientWidth*d;MenuArt.canvas.height=MenuArt.canvas.clientHeight*d;MenuArt.ctx.setTransform(d,0,0,d,0,0);};
+MenuArt.loop=function(){if(!MenuArt.ctx)return;var c=MenuArt.ctx,w=MenuArt.canvas.clientWidth,h=MenuArt.canvas.clientHeight,t=MenuArt.frame++/60;c.clearRect(0,0,w,h);c.fillStyle="#0b1730";c.fillRect(0,0,w,h);c.strokeStyle="rgba(84,245,233,.16)";c.lineWidth=2;for(var x=-w;x<w*2;x+=60){c.beginPath();c.moveTo(x+(t*35)%60,h);c.lineTo(x+180+(t*35)%60,h*.52);c.stroke();}var px=w*.42+Math.sin(t*2)*w*.04,py=h*.55-Math.abs(Math.sin(t*3))*h*.18;c.save();c.translate(px,py);c.rotate(Math.sin(t*3)*.08);c.shadowColor="#54f5e9";c.shadowBlur=18;c.fillStyle="#54f5e9";c.beginPath();c.arc(0,0,24,0,Math.PI*2);c.fill();c.fillStyle="#ff4f9a";c.fillRect(-15,22,30,10);c.strokeStyle="#ffd166";c.lineWidth=7;c.beginPath();c.moveTo(-8,28);c.lineTo(-25,50);c.moveTo(8,28);c.lineTo(24,50);c.stroke();c.restore();for(var i=0;i<4;i++){var sx=w*(.18+i*.22),sy=h*.72-Math.abs(Math.sin(t*2+i))*12;c.fillStyle="#65ff75";c.shadowColor="#65ff75";c.shadowBlur=14;c.beginPath();c.arc(sx,sy,20,Math.PI,0);c.lineTo(sx+20,sy+12);c.lineTo(sx-20,sy+12);c.closePath();c.fill();}requestAnimationFrame(MenuArt.loop);};
 
-function showMenu() { document.getElementById("menuScreen").hidden=false; document.getElementById("gameSection").hidden=true; MenuMusic.start(); }
-function startGame() { MenuMusic.stop(); document.getElementById("menuScreen").hidden=true; document.getElementById("gameSection").hidden=false; Game.campaignTransitioned=false; Game.startLevel(CONFIG.START_LEVEL, true); }
-function updateVolumeControl(id, value) {
-  var key = id === "masterVolume" ? "masterVolume" : "gunVolume";
-  AudioFX[key] = Math.max(0, Math.min(1, Number(value)));
-  localStorage.setItem(id === "masterVolume" ? "neonRollerMasterVolume" : "neonRollerGunVolume", String(AudioFX[key]));
-  var output = document.getElementById(id + "Value");
-  if (output) output.textContent = Math.round(AudioFX[key] * 100) + "%";
-}
-function bindMenu() {
-  document.getElementById("playButton").addEventListener("click", startGame);
-  document.getElementById("settingsButton").addEventListener("click", function () { var p=document.getElementById("settingsPanel"); p.hidden=!p.hidden; });
-  ["masterVolume", "gunVolume"].forEach(function (id) {
-    var input=document.getElementById(id); input.value=AudioFX[id === "masterVolume" ? "masterVolume" : "gunVolume"]; updateVolumeControl(id, input.value);
-    input.addEventListener("input", function () { updateVolumeControl(id, input.value); });
-  });
-}
+function showMenu(){document.getElementById("menuScreen").hidden=false;document.getElementById("gameSection").hidden=true;MenuArt.setup();MenuMusic.start();}
+function startGame(){MenuMusic.stop();document.getElementById("menuScreen").hidden=true;document.getElementById("gameSection").hidden=false;Game.campaignTransitioned=false;Game.startLevel(CONFIG.START_LEVEL,true);}
+function toggleMenuFullscreen(){var target=document.getElementById("menuScreen");if(!document.fullscreenElement){if(!target.requestFullscreen){Game.showMessage("FULLSCREEN IS NOT SUPPORTED BY THIS BROWSER");return;}target.requestFullscreen().catch(function(){Game.showMessage("FULLSCREEN REQUEST BLOCKED");});}else if(document.exitFullscreen)document.exitFullscreen();}
+function updateVolumeControl(id,value){var key=id==="masterVolume"?"masterVolume":"gunVolume";AudioFX[key]=Math.max(0,Math.min(1,Number(value)));localStorage.setItem(id==="masterVolume"?"neonRollerMasterVolume":"neonRollerGunVolume",String(AudioFX[key]));var output=document.getElementById(id+"Value");if(output)output.textContent=Math.round(AudioFX[key]*100)+"%";}
+function bindMenu(){document.getElementById("playButton").addEventListener("click",startGame);document.getElementById("settingsButton").addEventListener("click",function(){var p=document.getElementById("settingsPanel");p.hidden=!p.hidden;});document.getElementById("menuFullscreenButton").addEventListener("click",toggleMenuFullscreen);["masterVolume","gunVolume"].forEach(function(id){var input=document.getElementById(id);input.value=AudioFX[id];updateVolumeControl(id,input.value);input.addEventListener("input",function(){updateVolumeControl(id,input.value);});});document.addEventListener("fullscreenchange",function(){var b=document.getElementById("menuFullscreenButton");if(b)b.textContent=document.fullscreenElement?"⛶ EXIT FULLSCREEN":"⛶ FULLSCREEN";});}

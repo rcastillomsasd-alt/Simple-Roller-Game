@@ -6,6 +6,7 @@
   <meta name="theme-color" content="#090b18">
   <title>NEON ROLLER // MOMENTUM</title>
   <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="menu.css">
 </head>
 <body>
   <main class="shell">
@@ -14,13 +15,17 @@
       <div class="status"><i></i><span id="statusText">SYSTEM ONLINE</span></div>
     </header>
     <section id="menuScreen" class="menu-screen" aria-label="Main menu">
-      <p class="eyebrow">MOMENTUM PROTOCOL</p><h2>NEON <span>ROLLER</span></h2>
-      <p class="menu-subtitle">ROLL. JUMP. SURVIVE.</p>
-      <button id="playButton" class="menu-button" type="button">▶ PLAY</button>
-      <button id="settingsButton" class="menu-button secondary" type="button">⚙ SETTINGS</button>
-      <div id="settingsPanel" class="settings-panel" hidden>
-        <label>MASTER VOLUME <input id="masterVolume" type="range" min="0" max="1" step="0.01" value="0.7"><output id="masterVolumeValue">70%</output></label>
-        <label>GUN VOLUME <input id="gunVolume" type="range" min="0" max="1" step="0.01" value="0.8"><output id="gunVolumeValue">80%</output></label>
+      <canvas id="menuBackdrop" aria-hidden="true"></canvas>
+      <div class="menu-content">
+        <p class="eyebrow">MOMENTUM PROTOCOL</p><h2>NEON <span>ROLLER</span></h2>
+        <p class="menu-subtitle">ROLL. JUMP. SURVIVE.</p>
+        <button id="playButton" class="menu-button" type="button">▶ PLAY</button>
+        <button id="settingsButton" class="menu-button secondary" type="button">⚙ SETTINGS</button>
+        <button id="menuFullscreenButton" class="menu-button secondary" type="button">⛶ FULLSCREEN</button>
+        <div id="settingsPanel" class="settings-panel" hidden>
+          <label>MASTER VOLUME <input id="masterVolume" type="range" min="0" max="1" step="0.01" value="0.7"><output id="masterVolumeValue">70%</output></label>
+          <label>GUN VOLUME <input id="gunVolume" type="range" min="0" max="1" step="0.01" value="0.8"><output id="gunVolumeValue">80%</output></label>
+        </div>
       </div>
     </section>
     <section id="gameSection" class="game-wrap" aria-label="Neon Roller game" hidden>

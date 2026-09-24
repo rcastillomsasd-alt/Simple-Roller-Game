@@ -1,0 +1,10 @@
+/* Fullscreen title-screen presentation and animated menu backdrop. */
+html,body{min-height:100%;margin:0;background:#090b18}
+.menu-screen{position:relative;isolation:isolate;overflow:hidden;min-height:min(680px,calc(100vh - 110px));display:grid;place-items:center;padding:36px 20px;box-sizing:border-box;background:radial-gradient(circle at 50% 45%,rgba(28,70,111,.65),rgba(9,11,24,.98) 72%)}
+.menu-screen #menuBackdrop{position:absolute;inset:0;width:100%;height:100%;z-index:-1;opacity:.9}
+.menu-content{position:relative;z-index:1;text-align:center;padding:28px 20px;border:1px solid rgba(84,245,233,.22);border-radius:18px;background:rgba(9,11,24,.48);box-shadow:0 0 60px rgba(84,245,233,.12);backdrop-filter:blur(2px)}
+.menu-screen:fullscreen,.menu-screen:-webkit-full-screen{width:100vw;height:100vh;min-height:100vh;padding:5vh 5vw;background:#090b18}
+.menu-screen:fullscreen #menuBackdrop,.menu-screen:-webkit-full-screen #menuBackdrop{position:fixed;width:100vw;height:100vh}
+.shell:has(.menu-screen:fullscreen),.shell:has(.menu-screen:-webkit-full-screen){max-width:none;width:100vw;min-height:100vh;margin:0}
+body:has(.menu-screen:fullscreen),body:has(.menu-screen:-webkit-full-screen){overflow:hidden}
+@media(max-width:650px){.menu-screen{min-height:calc(100vh - 90px)}.menu-content{width:min(92vw,440px);padding:24px 12px}.menu-screen:fullscreen,.menu-screen:-webkit-full-screen{padding:3vh 3vw}}
