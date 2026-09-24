@@ -1,6 +1,4 @@
 Draw.setup();
 bindTouch();
-Level.loadData(function () {
-  Game.startLevel(CONFIG.START_LEVEL);
-  Game.loop();
-});
+bindMenu();
+Level.loadData(function () { showMenu(); Game.mode="menu"; Game.loop(); });
