@@ -1,5 +1,7 @@
-var Input = { left:false, right:false, jump:false, restart:false, fire:false, secretBuffer:"" };
+var Input = { left:false, right:false, jump:false, jumpPressed:false, restart:false, fire:false, secretBuffer:"" };
 window.addEventListener("keydown", function (event) {
+  var jumpKey = event.key === "ArrowUp" || event.key === " " || event.key === "w" || event.key === "W";
+  if (jumpKey && !Input.jump) Input.jumpPressed = true;
   setKey(event.key, true);
   if (["ArrowLeft","ArrowRight","ArrowUp"," "].indexOf(event.key) >= 0) event.preventDefault();
 });
@@ -18,10 +20,8 @@ function setKey(key, isDown) {
 function bindTouch() {
   document.querySelectorAll("[data-key]").forEach(function (button) {
     var key = button.dataset.key;
-    button.addEventListener("pointerdown", function (event) { event.preventDefault(); Input[key] = true; });
-    ["pointerup","pointercancel","pointerleave"].forEach(function (name) {
-      button.addEventListener(name, function () { Input[key] = false; });
-    });
+    button.addEventListener("pointerdown", function (event) { event.preventDefault(); if (key === "jump" && !Input.jump) Input.jumpPressed = true; Input[key] = true; });
+    ["pointerup","pointercancel","pointerleave"].forEach(function (name) { button.addEventListener(name, function () { Input[key] = false; }); });
   });
   var fire = document.getElementById("fireButton");
   if (fire) fire.addEventListener("pointerdown", function (event) { event.preventDefault(); Game.fire(); });
@@ -29,4 +29,13 @@ function bindTouch() {
   if (exit) exit.addEventListener("click", function () { Game.exitSecret(); });
   var canvas = document.getElementById("game");
   if (canvas) canvas.addEventListener("pointerdown", function () { Game.fire(); });
+  var fullscreen = document.getElementById("fullscreenButton");
+  if (fullscreen) fullscreen.addEventListener("click", function () {
+    var target = document.querySelector(".game-wrap") || document.documentElement;
+    if (!document.fullscreenElement) target.requestFullscreen().catch(function () {});
+    else document.exitFullscreen();
+  });
+  document.addEventListener("fullscreenchange", function () {
+    if (fullscreen) fullscreen.textContent = document.fullscreenElement ? "⛶ EXIT FULLSCREEN" : "⛶ FULLSCREEN";
+  });
 }
