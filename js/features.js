@@ -1,24 +1,30 @@
 var Slimes = { list: [], nextSpawn: 0, maxSpawn: 5 };
-Slimes.reset = function () { Slimes.list = []; Slimes.nextSpawn = 0; };
+Slimes.reset = function () {
+  Slimes.list = [];
+  Slimes.nextSpawn = 0;
+};
+
 Slimes.spawn = function () {
-  if (Game.levelNumber < 0 || Game.levelNumber > 9 || Slimes.list.length >= Slimes.maxSpawn) return;
-  var x = Math.min(Math.max(240, Player.x + 360 + Slimes.list.length * 180), Math.max(240, Level.pixelWidth() - 80));
+  if (!Game || typeof Game.levelNumber !== "number") return;
+  var cap = Math.min(5, 2 + Math.floor(Math.max(0, Game.levelNumber) / 2));
+  if (Slimes.list.length >= cap) return;
+  var x = Math.min(Math.max(240, Player.x + 360 + Slimes.list.length * 180), Math.max(320, Level.pixelWidth() - 80));
   Slimes.list.push({
     x: x,
     y: 250 + (Slimes.list.length % 2) * 30,
     radius: 18,
     health: 1 + Math.min(2, Math.floor(Game.levelNumber / 3)),
     hit: 0,
-    speed: 0.8 + Game.levelNumber * 0.14,
+    speed: 0.72 + Game.levelNumber * 0.12,
     direction: Player.x < x ? -1 : 1
   });
 };
+
 Slimes.update = function () {
   if (Game.mode !== "playing") return;
-  var shouldSpawn = Game.levelNumber === 0 || Game.levelNumber >= 2;
-  if (shouldSpawn && Slimes.list.length < Math.min(5, 2 + Math.floor(Game.levelNumber / 2)) && performance.now() > Slimes.nextSpawn) {
+  if (Game.levelNumber >= 0 && Slimes.list.length < Math.min(5, 2 + Math.floor(Game.levelNumber / 2)) && performance.now() > Slimes.nextSpawn) {
     Slimes.spawn();
-    Slimes.nextSpawn = performance.now() + Math.max(1400, 2600 - Game.levelNumber * 180);
+    Slimes.nextSpawn = performance.now() + Math.max(1300, 2600 - Game.levelNumber * 180);
   }
 
   for (var i = Slimes.list.length - 1; i >= 0; i--) {
@@ -53,6 +59,7 @@ Slimes.update = function () {
     }
   }
 };
+
 Slimes.draw = function (c) {
   Slimes.list.forEach(function (s) {
     c.save();
@@ -89,6 +96,7 @@ MenuMusic.start = function () {
     AudioFX.tone(note, 0.18, "triangle", 0.024 * (1 + AudioFX.masterVolume));
   }, 230);
 };
+
 MenuMusic.stop = function () {
   MenuMusic.active = false;
   if (MenuMusic.timer) {
@@ -123,7 +131,7 @@ AudioFX.bossDown = function () {
   AudioFX.tone(70, 0.5, "sawtooth", 0.08 * AudioFX.masterVolume);
 };
 
-var MenuArt = { canvas: null, ctx: null, frame: 0 };
+var MenuArt = { canvas: null, ctx: null, frame: 0, bound: false };
 MenuArt.setup = function () {
   MenuArt.canvas = document.getElementById("menuBackdrop");
   if (!MenuArt.canvas) return;
@@ -158,16 +166,16 @@ MenuArt.loop = function () {
   c.lineWidth = 2;
   for (var x = -w; x < w * 2; x += 60) {
     c.beginPath();
-    c.moveTo(x + (t * 35) % 60, h);
-    c.lineTo(x + 180 + (t * 35) % 60, h * 0.52);
+    c.moveTo(x + (t * 20) % 60, h);
+    c.lineTo(x + 180 + (t * 20) % 60, h * 0.52);
     c.stroke();
   }
 
-  var px = w * 0.42 + Math.sin(t * 2) * w * 0.04;
-  var py = h * 0.56 - Math.abs(Math.sin(t * 3)) * h * 0.18;
+  var px = w * 0.42 + Math.sin(t * 1.8) * w * 0.03;
+  var py = h * 0.56 - Math.abs(Math.sin(t * 2.3)) * h * 0.13;
   c.save();
   c.translate(px, py);
-  c.rotate(Math.sin(t * 3) * 0.08);
+  c.rotate(Math.sin(t * 2.3) * 0.05);
   c.shadowColor = "#54f5e9";
   c.shadowBlur = 18;
   c.fillStyle = "#54f5e9";
@@ -185,8 +193,8 @@ MenuArt.loop = function () {
   c.restore();
 
   for (var i = 0; i < 5; i++) {
-    var sx = w * (0.18 + i * 0.18) + Math.sin(t * 1.8 + i) * 16;
-    var sy = h * 0.72 - Math.abs(Math.sin(t * 2 + i)) * 12;
+    var sx = w * (0.18 + i * 0.18) + Math.sin(t * 1.5 + i) * 16;
+    var sy = h * 0.72 - Math.abs(Math.sin(t * 1.7 + i)) * 12;
     c.fillStyle = "#65ff75";
     c.shadowColor = "#65ff75";
     c.shadowBlur = 14;
@@ -222,23 +230,21 @@ function startGame() {
   MenuMusic.stop();
   var menu = document.getElementById("menuScreen");
   var game = document.getElementById("gameSection");
-  var shouldKeepFullscreen = document.fullscreenElement && document.fullscreenElement.id === "menuScreen";
-
   if (menu) menu.hidden = true;
   if (game) game.hidden = false;
-
-  if (shouldKeepFullscreen) {
-    if (document.exitFullscreen) {
-      document.exitFullscreen().then(function () {
-        setTimeout(function () {
-          if (game && game.requestFullscreen) game.requestFullscreen().catch(function () {});
-        }, 120);
-      }).catch(function () {});
-    }
-  }
-
   Game.campaignTransitioned = false;
-  Game.startLevel(0, true);
+  Game.mode = "playing";
+  Game.startLevel(Game.levelNumber || 0, true);
+}
+
+function returnToMenu() {
+  Game.mode = "menu";
+  Slimes.reset();
+  var menu = document.getElementById("menuScreen");
+  var game = document.getElementById("gameSection");
+  if (menu) menu.hidden = false;
+  if (game) game.hidden = true;
+  MenuMusic.start();
 }
 
 function toggleMenuFullscreen() {
@@ -267,6 +273,9 @@ function bindMenu() {
 
   var menuFullscreen = document.getElementById("menuFullscreenButton");
   if (menuFullscreen) menuFullscreen.addEventListener("click", toggleMenuFullscreen);
+
+  var menuButton = document.getElementById("menuButton");
+  if (menuButton) menuButton.addEventListener("click", returnToMenu);
 
   ["masterVolume", "gunVolume"].forEach(function (id) {
     var input = document.getElementById(id);

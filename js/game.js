@@ -7,10 +7,9 @@ var Game = {
   bullets: [],
   boss: null,
   lastShot: 0,
-  campaignTransitioned: false,
-  levelHasEnemies: function () {
-    return this.levelNumber === 0 || this.levelNumber >= 2;
-  }
+  exitRequested: false,
+  previousLevel: 0,
+  campaignTransitioned: false
 };
 
 var AudioFX = {
@@ -39,18 +38,10 @@ var AudioFX = {
       osc.stop(AudioFX.ctx.currentTime + duration);
     } catch (e) {}
   },
-  shoot: function () {
-    AudioFX.tone(520, 0.07, "square", 0.035 * AudioFX.gunVolume);
-  },
-  hurt: function () {
-    AudioFX.tone(110, 0.22, "sawtooth", 0.07 * AudioFX.masterVolume);
-  },
-  bossHit: function () {
-    AudioFX.tone(180, 0.1, "triangle", 0.06 * AudioFX.masterVolume);
-  },
-  bossDown: function () {
-    AudioFX.tone(70, 0.5, "sawtooth", 0.08 * AudioFX.masterVolume);
-  }
+  shoot: function () { AudioFX.tone(520, 0.07, "square", 0.035 * AudioFX.gunVolume); },
+  hurt: function () { AudioFX.tone(110, 0.22, "sawtooth", 0.07 * AudioFX.masterVolume); },
+  bossHit: function () { AudioFX.tone(180, 0.1, "triangle", 0.06 * AudioFX.masterVolume); },
+  bossDown: function () { AudioFX.tone(70, 0.5, "sawtooth", 0.08 * AudioFX.masterVolume); }
 };
 
 Game.startLevel = function (n, resetScore) {
@@ -62,27 +53,36 @@ Game.startLevel = function (n, resetScore) {
   Game.boss = Level.secret ? { x: Level.pixelWidth() - 220, y: 250, health: CONFIG.BOSS_HEALTH, shotClock: 0, flash: 0 } : null;
   Game.mode = "playing";
   Game.campaignTransitioned = false;
-  Game.score = resetScore ? 0 : Game.score;
+  if (resetScore) Game.score = 0;
   Game.startTime = performance.now();
   Game.showMessage(Level.secret ? "SECRET SECTOR // DEFEAT THE BOSS" : "");
   Game.updateHud();
+  if (Slimes) Slimes.reset();
 };
+
 Game.unlockSecret = function () {
   if (Game.unlockedSecret) return;
   Game.unlockedSecret = true;
+  Game.previousLevel = Game.levelNumber;
   Game.startLevel(10, true);
   Game.showMessage("SECRET LEVEL UNLOCKED // DEFEAT THE CORE BOSS");
 };
+
 Game.exitSecret = function () {
-  if (!Level.secret) return;
-  Game.startLevel(0, true);
-  Game.showMessage("RETURNED TO MAIN SECTOR");
+  if (Level.secret) {
+    var target = typeof Game.previousLevel === "number" ? Game.previousLevel : 0;
+    Game.startLevel(target, true);
+    Game.showMessage("RETURNED TO PREVIOUS SECTOR");
+  }
 };
+
 Game.showMessage = function (text) {
   var node = document.getElementById("message");
   if (node) node.textContent = text;
 };
+
 Game.updateHud = function () {
+  if (!Level || !Level.name) return;
   var levelName = document.getElementById("levelName");
   var scoreEl = document.getElementById("score");
   var totalEl = document.getElementById("total");
@@ -101,22 +101,50 @@ Game.updateHud = function () {
   if (bossHealth && Game.boss) bossHealth.textContent = String(Game.boss.health);
   if (exitButton) exitButton.style.display = Level.secret ? "inline-block" : "none";
 };
+
 Game.formatTime = function (seconds) {
   return String(Math.floor(seconds / 60)).padStart(2, "0") + ":" + String(Math.floor(seconds % 60)).padStart(2, "0");
 };
+
 Game.fire = function () {
   if (Game.mode !== "playing") return;
   var now = performance.now();
   if (now - Game.lastShot < 180) return;
   Game.lastShot = now;
   AudioFX.shoot();
-  Game.bullets.push({ x: Player.x + CONFIG.PLAYER_SIZE, y: Player.y + 15, vx: 10, life: 0, enemy: false });
+
+  var canvas = document.getElementById("game");
+  var targetX = Input.cursorX;
+  var targetY = Input.cursorY;
+
+  if (!canvas || targetX === 0 && targetY === 0) {
+    targetX = Player.x + CONFIG.PLAYER_SIZE + 60;
+    targetY = Player.y + 15;
+  }
+
+  var originX = Player.x + CONFIG.PLAYER_SIZE / 2;
+  var originY = Player.y + CONFIG.PLAYER_SIZE / 2;
+  var dx = targetX - originX;
+  var dy = targetY - originY;
+  var length = Math.hypot(dx, dy) || 1;
+
+  Game.bullets.push({
+    x: originX,
+    y: originY,
+    vx: (dx / length) * 10,
+    vy: (dy / length) * 10,
+    life: 0,
+    enemy: false
+  });
 };
+
 Game.updateBullets = function () {
   for (var i = Game.bullets.length - 1; i >= 0; i--) {
     var b = Game.bullets[i];
     b.x += b.vx;
+    b.y += b.vy;
     b.life += 1;
+
     if (Game.boss && !b.enemy && Math.abs(b.x - Game.boss.x) < 30 && Math.abs(b.y - (Game.boss.y + 35)) < 45) {
       Game.boss.health -= 1;
       Game.boss.flash = 8;
@@ -131,6 +159,7 @@ Game.updateBullets = function () {
       }
       continue;
     }
+
     if (b.enemy && Math.abs(b.x - (Player.x + 15)) < 20 && Math.abs(b.y - (Player.y + 15)) < 18) {
       Game.bullets.splice(i, 1);
       if (Player.takeDamage()) {
@@ -139,11 +168,13 @@ Game.updateBullets = function () {
       }
       continue;
     }
-    if (b.life > 100 || b.x < Draw.cameraX - 120 || b.x > Level.pixelWidth() + 200) {
+
+    if (b.life > 100 || b.x < Draw.cameraX - 120 || b.x > Level.pixelWidth() + 200 || b.y < -40 || b.y > CONFIG.CANVAS_H + 40) {
       Game.bullets.splice(i, 1);
     }
   }
 };
+
 Game.updateBoss = function () {
   if (!Game.boss) return;
   var b = Game.boss;
@@ -151,7 +182,7 @@ Game.updateBoss = function () {
   b.flash = Math.max(0, b.flash - 1);
   b.y = 235 + Math.sin(b.shotClock / 35) * 55;
   if (b.shotClock % 110 === 0) {
-    Game.bullets.push({ x: b.x, y: b.y + 35, vx: -3.2, life: 0, enemy: true });
+    Game.bullets.push({ x: b.x, y: b.y + 35, vx: -3.2, vy: 0, life: 0, enemy: true });
     AudioFX.tone(95, 0.12, "sawtooth", 0.035);
   }
   if (Math.abs(Player.x - b.x) < 48 && Math.abs(Player.y - b.y) < 70 && Player.takeDamage()) {
@@ -159,9 +190,10 @@ Game.updateBoss = function () {
     Game.showMessage("BOSS HIT // PRESS R TO REBOOT");
   }
 };
+
 Game.update = function () {
   if (Input.restart) {
-    Game.startLevel(Game.levelNumber, true);
+    Game.startLevel(Game.levelNumber || 0, true);
     Input.restart = false;
     return;
   }
@@ -170,7 +202,6 @@ Game.update = function () {
   Player.update();
   Game.updateBullets();
   Game.updateBoss();
-
   if (Slimes && Slimes.update) Slimes.update();
 
   Level.collectibles.forEach(function (g) {
@@ -183,30 +214,25 @@ Game.update = function () {
   if (Player.isDead()) {
     Game.mode = "dead";
     Game.showMessage("SIGNAL LOST // PRESS R TO REBOOT");
-  } else if (Player.hasWon() && !Game.campaignTransitioned) {
-    Game.campaignTransitioned = true;
-
-    if (Game.levelNumber === 0) {
-      Game.startLevel(1, false);
-      Game.showMessage("SECTOR CLEAR // TELEPORTING TO PRESSURE DROP");
-    } else if (Game.levelNumber === 1) {
-      Game.startLevel(2, false);
-      Game.showMessage("SECTOR CLEAR // TELEPORTING TO STATIC RUN");
-    } else if (Game.levelNumber >= 2 && Game.levelNumber < 9) {
+  } else if (Player.hasWon()) {
+    if (Level.secret) {
+      Game.exitSecret();
+    } else if (!Game.campaignTransitioned) {
+      Game.campaignTransitioned = true;
       var nextLevel = Game.levelNumber + 1;
-      Game.startLevel(nextLevel, false);
-      Game.showMessage("SECTOR CLEAR // TELEPORTING TO NEXT SECTOR");
-    } else if (Game.levelNumber === 9) {
-      Game.mode = "won";
-      Game.showMessage("ALL SECTORS CLEARED // PRESS R TO RESTART");
-    } else if (Level.secret && !Game.boss) {
-      Game.mode = "won";
-      Game.showMessage("NULL SPACE CLEARED // PRESS R TO RESTART");
+      if (Level.levels[nextLevel]) {
+        Game.startLevel(nextLevel, false);
+        Game.showMessage("SECTOR CLEAR // TELEPORTING TO NEXT LEVEL");
+      } else {
+        Game.mode = "won";
+        Game.showMessage("ALL SECTORS CLEARED // PRESS R TO RESTART");
+      }
     }
   }
 
   Game.updateHud();
 };
+
 Game.loop = function () {
   Game.update();
   Draw.updateCamera();
@@ -214,15 +240,12 @@ Game.loop = function () {
   requestAnimationFrame(Game.loop);
 };
 
-var originalMenuShow = null;
-if (typeof showMenu === "function") {
-  originalMenuShow = showMenu;
-}
-
 window.addEventListener("load", function () {
   Draw.setup();
   bindTouch();
   bindMenu();
+  Input.cursorX = CONFIG.CANVAS_W * 0.8;
+  Input.cursorY = CONFIG.CANVAS_H * 0.5;
   Level.loadData(function () {
     Game.mode = "menu";
     showMenu();
