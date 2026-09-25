@@ -1,10 +1,81 @@
 /* Fullscreen title-screen presentation and animated menu backdrop. */
 html,body{min-height:100%;margin:0;background:#090b18}
-.menu-screen{position:relative;isolation:isolate;overflow:hidden;min-height:min(680px,calc(100vh - 110px));display:grid;place-items:center;padding:36px 20px;box-sizing:border-box;background:radial-gradient(circle at 50% 45%,rgba(28,70,111,.65),rgba(9,11,24,.98) 72%)}
-.menu-screen #menuBackdrop{position:absolute;inset:0;width:100%;height:100%;z-index:-1;opacity:.9}
-.menu-content{position:relative;z-index:1;text-align:center;padding:28px 20px;border:1px solid rgba(84,245,233,.22);border-radius:18px;background:rgba(9,11,24,.48);box-shadow:0 0 60px rgba(84,245,233,.12);backdrop-filter:blur(2px)}
-.menu-screen:fullscreen,.menu-screen:-webkit-full-screen{width:100vw;height:100vh;min-height:100vh;padding:5vh 5vw;background:#090b18}
-.menu-screen:fullscreen #menuBackdrop,.menu-screen:-webkit-full-screen #menuBackdrop{position:fixed;width:100vw;height:100vh}
-.shell:has(.menu-screen:fullscreen),.shell:has(.menu-screen:-webkit-full-screen){max-width:none;width:100vw;min-height:100vh;margin:0}
-body:has(.menu-screen:fullscreen),body:has(.menu-screen:-webkit-full-screen){overflow:hidden}
-@media(max-width:650px){.menu-screen{min-height:calc(100vh - 90px)}.menu-content{width:min(92vw,440px);padding:24px 12px}.menu-screen:fullscreen,.menu-screen:-webkit-full-screen{padding:3vh 3vw}}
+
+.menu-screen {
+  position:relative;
+  isolation:isolate;
+  overflow:hidden;
+  min-height:min(680px,calc(100vh - 110px));
+  display:grid;
+  place-items:center;
+  padding:36px 20px;
+  box-sizing:border-box;
+  background:radial-gradient(circle at 50% 45%, rgba(28,70,111,.65), rgba(9,11,24,.98) 72%);
+}
+
+.menu-screen #menuBackdrop {
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  z-index:-1;
+  opacity:.9;
+  display:block;
+}
+
+.menu-content {
+  position:relative;
+  z-index:1;
+  text-align:center;
+  padding:28px 20px;
+  border:1px solid rgba(84,245,233,.22);
+  border-radius:18px;
+  background:rgba(9,11,24,.48);
+  box-shadow:0 0 60px rgba(84,245,233,.12);
+  backdrop-filter:blur(2px);
+}
+
+.menu-screen h2{font-size:clamp(42px,9vw,90px);margin:8px 0;color:#54f5e9;text-shadow:0 0 24px rgba(84,245,233,.7)}
+.menu-subtitle{letter-spacing:5px;color:#ffd166;text-transform:uppercase;font-size:12px}
+.menu-button{display:block;margin:14px auto;width:220px;font-weight:bold}
+.menu-button.secondary{color:#ffd166;border-color:#ffd166}
+.settings-panel{max-width:360px;margin:22px auto;padding:18px;border:1px solid #54f5e9;border-radius:8px;background:#101a2d}
+.settings-panel label{display:flex;gap:10px;align-items:center;margin:12px 0;font-size:11px;letter-spacing:1px;text-transform:uppercase;color:#dffcff}
+.settings-panel input{flex:1}
+.settings-panel output{display:inline-block;width:42px;text-align:right}
+
+.menu-screen[hidden],
+.game-wrap[hidden]{display:none}
+
+.menu-screen:fullscreen,
+.menu-screen:-webkit-full-screen{
+  width:100vw;
+  height:100vh;
+  min-height:100vh;
+  padding:5vh 5vw;
+  background:#090b18;
+  border-radius:0;
+}
+.menu-screen:fullscreen #menuBackdrop,
+.menu-screen:-webkit-full-screen #menuBackdrop{position:fixed;width:100vw;height:100vh}
+
+.shell:has(.menu-screen:fullscreen),
+.shell:has(.menu-screen:-webkit-full-screen){
+  max-width:none;
+  width:100vw;
+  min-height:100vh;
+  margin:0;
+  padding:0;
+}
+body:has(.menu-screen:fullscreen),
+body:has(.menu-screen:-webkit-full-screen){
+  overflow:hidden;
+  background:#090b18;
+}
+
+@media(max-width:650px){
+  .menu-screen{min-height:calc(100vh - 90px)}
+  .menu-content{width:min(92vw,440px);padding:24px 12px}
+  .menu-screen:fullscreen,
+  .menu-screen:-webkit-full-screen{padding:3vh 3vw}
+}

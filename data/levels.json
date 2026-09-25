@@ -1,13 +1,16 @@
 {
-  "_comment": "Main campaign has seven sectors; typing HIDDEN unlocks the separate boss sector.",
+  "_comment": "Campaign levels and secret boss. The first two levels already exist; the next 8 are harder and enemy-heavy.",
   "levels": [
-    {"name":"01 // FIRST LIGHT","pieces":["start","flat","gem","gap","flat","spikes","platform","stairs","finish"]},
-    {"name":"02 // PRESSURE DROP","pieces":["start","spikes","gem","gap","step","spikepit","platform","gap","flat","finish"]},
-    {"name":"03 // STATIC RUN","pieces":["start","gap","spikes","platform","gem","step","spikepit","stairs","finish"]},
-    {"name":"04 // VOLTAGE RISE","pieces":["start","spikepit","gap","stairs","gem","spikes","platform","gap","finish"]},
-    {"name":"05 // FRACTURE LINE","pieces":["start","spikes","gap","step","spikepit","gem","stairs","gap","platform","finish"]},
-    {"name":"06 // OVERDRIVE","pieces":["start","gap","spikepit","stairs","spikes","gem","step","gap","spikepit","finish"]},
-    {"name":"07 // FINAL CIRCUIT","pieces":["start","spikes","gap","platform","spikepit","stairs","gem","spikes","gap","finish"]},
-    {"name":"?? // NULL SPACE","secret":true,"pieces":["start","secret","gap","spikes","gem","stairs","spikepit","platform","gem","boost","finish"]}
+    { "name": "01 // FIRST LIGHT", "pieces": ["start", "flat", "gem", "gap", "flat", "spikes", "platform", "stairs", "finish"] },
+    { "name": "02 // PRESSURE DROP", "pieces": ["start", "spikes", "gem", "gap", "step", "spikepit", "platform", "gap", "flat", "finish"] },
+    { "name": "03 // STATIC RUN", "pieces": ["start", "gap", "spikes", "platform", "gem", "step", "spikepit", "stairs", "finish"] },
+    { "name": "04 // VOLTAGE RISE", "pieces": ["start", "spikepit", "gap", "stairs", "gem", "spikes", "platform", "gap", "finish"] },
+    { "name": "05 // FRACTURE LINE", "pieces": ["start", "spikes", "gap", "step", "spikepit", "gem", "stairs", "gap", "platform", "finish"] },
+    { "name": "06 // OVERDRIVE", "pieces": ["start", "gap", "spikepit", "stairs", "spikes", "gem", "step", "gap", "spikepit", "finish"] },
+    { "name": "07 // FINAL CIRCUIT", "pieces": ["start", "spikes", "gap", "platform", "spikepit", "stairs", "gem", "spikes", "gap", "finish"] },
+    { "name": "08 // SHADOW STRIDE", "pieces": ["start", "platform", "gap", "spikes", "gem", "stairs", "spikepit", "gap", "platform", "finish"] },
+    { "name": "09 // APEX HUNT", "pieces": ["start", "spikes", "gap", "step", "spikepit", "gem", "platform", "stairs", "gap", "finish"] },
+    { "name": "10 // TERMINAL WARP", "pieces": ["start", "gap", "spikepit", "platform", "gem", "stairs", "spikes", "gap", "platform", "finish"] },
+    { "name": "?? // NULL SPACE", "secret": true, "pieces": ["start", "secret", "gap", "spikes", "gem", "stairs", "spikepit", "platform", "gem", "boost", "finish"] }
   ]
 }
