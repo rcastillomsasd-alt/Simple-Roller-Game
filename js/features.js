@@ -6,25 +6,25 @@ Slimes.reset = function () {
 
 Slimes.spawn = function () {
   if (!Game || typeof Game.levelNumber !== "number") return;
-  var cap = Math.min(5, 2 + Math.floor(Math.max(0, Game.levelNumber) / 2));
+  var cap = Math.min(8, 2 + Math.floor(Math.max(0, Game.levelNumber) / 2));
   if (Slimes.list.length >= cap) return;
   var x = Math.min(Math.max(240, Player.x + 360 + Slimes.list.length * 180), Math.max(320, Level.pixelWidth() - 80));
   Slimes.list.push({
     x: x,
     y: 250 + (Slimes.list.length % 2) * 30,
     radius: 18,
-    health: 1 + Math.min(2, Math.floor(Game.levelNumber / 3)),
+    health: 1 + Math.min(3, Math.floor(Game.levelNumber / 2.5)),
     hit: 0,
-    speed: 0.72 + Game.levelNumber * 0.12,
+    speed: 0.8 + Game.levelNumber * 0.15,
     direction: Player.x < x ? -1 : 1
   });
 };
 
 Slimes.update = function () {
   if (Game.mode !== "playing") return;
-  if (Game.levelNumber >= 0 && Slimes.list.length < Math.min(5, 2 + Math.floor(Game.levelNumber / 2)) && performance.now() > Slimes.nextSpawn) {
+  if (Game.levelNumber >= 0 && Slimes.list.length < Math.min(8, 2 + Math.floor(Game.levelNumber / 2)) && performance.now() > Slimes.nextSpawn) {
     Slimes.spawn();
-    Slimes.nextSpawn = performance.now() + Math.max(1300, 2600 - Game.levelNumber * 180);
+    Slimes.nextSpawn = performance.now() + Math.max(900, 2200 - Game.levelNumber * 160);
   }
 
   for (var i = Slimes.list.length - 1; i >= 0; i--) {
@@ -51,7 +51,7 @@ Slimes.update = function () {
           if (s.health <= 0) {
             Slimes.list.splice(i, 1);
             Game.score += 120;
-            AudioFX.tone(200, 0.12, "triangle", 0.03);
+            AudioFX.tone(200, 0.12, "triangle", 0.06);
           }
           break;
         }
@@ -63,7 +63,7 @@ Slimes.update = function () {
 Slimes.draw = function (c) {
   Slimes.list.forEach(function (s) {
     c.save();
-    c.translate(s.x, s.y);
+    c.translate(s.x - Draw.cameraX, s.y);
     c.fillStyle = s.hit ? "#fff" : "#76ff8d";
     c.shadowColor = "#76ff8d";
     c.shadowBlur = 18;
@@ -93,8 +93,8 @@ MenuMusic.start = function () {
     if (!MenuMusic.active || !AudioFX.ctx) return;
     var note = notes[MenuMusic.step % notes.length];
     MenuMusic.step += 1;
-    AudioFX.tone(note, 0.18, "triangle", 0.024 * (1 + AudioFX.masterVolume));
-  }, 230);
+    AudioFX.tone(note, 0.2, "triangle", 0.04 * (1.2 + AudioFX.masterVolume));
+  }, 200);
 };
 
 MenuMusic.stop = function () {
@@ -109,7 +109,7 @@ AudioFX.masterVolume = Number(localStorage.getItem("neonRollerMasterVolume"));
 if (!isFinite(AudioFX.masterVolume) || AudioFX.masterVolume < 0) AudioFX.masterVolume = 1;
 AudioFX.masterVolume = Math.min(1.5, Math.max(0, AudioFX.masterVolume));
 AudioFX.gunVolume = Number(localStorage.getItem("neonRollerGunVolume"));
-if (!isFinite(AudioFX.gunVolume) || AudioFX.gunVolume < 0) AudioFX.gunVolume = 1.1;
+if (!isFinite(AudioFX.gunVolume) || AudioFX.gunVolume < 0) AudioFX.gunVolume = 1.2;
 AudioFX.gunVolume = Math.min(1.5, Math.max(0, AudioFX.gunVolume));
 
 var originalTone = AudioFX.tone;
@@ -119,16 +119,22 @@ AudioFX.tone = function (freq, duration, type, volume) {
   originalTone.call(AudioFX, freq, duration, type, finalVolume);
 };
 AudioFX.shoot = function () {
-  AudioFX.tone(520, 0.07, "square", 0.035 * AudioFX.gunVolume);
+  AudioFX.tone(720, 0.12, "square", 0.08 * AudioFX.gunVolume);
 };
 AudioFX.hurt = function () {
-  AudioFX.tone(110, 0.22, "sawtooth", 0.07 * AudioFX.masterVolume);
+  AudioFX.tone(110, 0.22, "sawtooth", 0.12 * AudioFX.masterVolume);
 };
 AudioFX.bossHit = function () {
-  AudioFX.tone(180, 0.1, "triangle", 0.06 * AudioFX.masterVolume);
+  AudioFX.tone(240, 0.15, "triangle", 0.12 * AudioFX.masterVolume);
 };
 AudioFX.bossDown = function () {
-  AudioFX.tone(70, 0.5, "sawtooth", 0.08 * AudioFX.masterVolume);
+  AudioFX.tone(70, 0.8, "sawtooth", 0.14 * AudioFX.masterVolume);
+};
+AudioFX.holyLaser = function () {
+  AudioFX.tone(1200, 0.08, "sine", 0.16 * AudioFX.masterVolume);
+};
+AudioFX.lightning = function () {
+  AudioFX.tone(150, 0.04, "sawtooth", 0.18 * AudioFX.masterVolume);
 };
 
 var MenuArt = { canvas: null, ctx: null, frame: 0, bound: false };

@@ -38,10 +38,18 @@ var AudioFX = {
       osc.stop(AudioFX.ctx.currentTime + duration);
     } catch (e) {}
   },
-  shoot: function () { AudioFX.tone(520, 0.07, "square", 0.035 * AudioFX.gunVolume); },
-  hurt: function () { AudioFX.tone(110, 0.22, "sawtooth", 0.07 * AudioFX.masterVolume); },
-  bossHit: function () { AudioFX.tone(180, 0.1, "triangle", 0.06 * AudioFX.masterVolume); },
-  bossDown: function () { AudioFX.tone(70, 0.5, "sawtooth", 0.08 * AudioFX.masterVolume); }
+  shoot: function () { AudioFX.tone(720, 0.12, "square", 0.08 * AudioFX.gunVolume); },
+  hurt: function () { AudioFX.tone(110, 0.22, "sawtooth", 0.12 * AudioFX.masterVolume); },
+  bossHit: function () { AudioFX.tone(240, 0.15, "triangle", 0.12 * AudioFX.masterVolume); },
+  bossDown: function () { AudioFX.tone(70, 0.8, "sawtooth", 0.14 * AudioFX.masterVolume); },
+  holyLaser: function () {
+    AudioFX.tone(1200, 0.08, "sine", 0.16 * AudioFX.masterVolume);
+    AudioFX.tone(800, 0.06, "sine", 0.12 * AudioFX.masterVolume);
+  },
+  lightning: function () {
+    AudioFX.tone(150, 0.04, "sawtooth", 0.18 * AudioFX.masterVolume);
+    AudioFX.tone(300, 0.03, "square", 0.14 * AudioFX.masterVolume);
+  }
 };
 
 Game.startLevel = function (n, resetScore) {
@@ -50,12 +58,12 @@ Game.startLevel = function (n, resetScore) {
   Level.build(n);
   Player.reset();
   Game.bullets = [];
-  Game.boss = Level.secret ? { x: Level.pixelWidth() - 220, y: 250, health: CONFIG.BOSS_HEALTH, shotClock: 0, flash: 0 } : null;
+  Game.boss = Level.secret ? { x: Level.pixelWidth() - 220, y: 150, health: CONFIG.BOSS_HEALTH, shotClock: 0, flash: 0, pattern: 0 } : null;
   Game.mode = "playing";
   Game.campaignTransitioned = false;
   if (resetScore) Game.score = 0;
   Game.startTime = performance.now();
-  Game.showMessage(Level.secret ? "SECRET SECTOR // DEFEAT THE BOSS" : "");
+  Game.showMessage(Level.secret ? "ANGEL CORE DETECTED // DEFEAT THE CELESTIAL ENTITY" : "");
   Game.updateHud();
   if (Slimes) Slimes.reset();
 };
@@ -65,7 +73,7 @@ Game.unlockSecret = function () {
   Game.unlockedSecret = true;
   Game.previousLevel = Game.levelNumber;
   Game.startLevel(10, true);
-  Game.showMessage("SECRET LEVEL UNLOCKED // DEFEAT THE CORE BOSS");
+  Game.showMessage("HIDDEN SECTOR UNLOCKED // DEFEAT THE CELESTIAL ANGEL BOSS");
 };
 
 Game.exitSecret = function () {
@@ -95,7 +103,7 @@ Game.updateHud = function () {
   if (levelName) levelName.textContent = Level.name;
   if (scoreEl) scoreEl.textContent = String(Game.score).padStart(3, "0");
   if (totalEl) totalEl.textContent = String(Level.collectibles.length).padStart(3, "0");
-  if (statusText) statusText.textContent = Level.secret ? "BOSS SIGNAL" : "SYSTEM ONLINE";
+  if (statusText) statusText.textContent = Level.secret ? "ANGEL SIGNAL" : "SYSTEM ONLINE";
   if (timeEl) timeEl.textContent = Game.formatTime((performance.now() - Game.startTime) / 1000);
   if (bossHud) bossHud.style.display = Game.boss ? "block" : "none";
   if (bossHealth && Game.boss) bossHealth.textContent = String(Game.boss.health);
@@ -109,18 +117,13 @@ Game.formatTime = function (seconds) {
 Game.fire = function () {
   if (Game.mode !== "playing") return;
   var now = performance.now();
-  if (now - Game.lastShot < 180) return;
+  if (now - Game.lastShot < 150) return;
   Game.lastShot = now;
   AudioFX.shoot();
 
   var canvas = document.getElementById("game");
-  var targetX = Input.cursorX;
+  var targetX = Input.cursorX + Draw.cameraX;
   var targetY = Input.cursorY;
-
-  if (!canvas || targetX === 0 && targetY === 0) {
-    targetX = Player.x + CONFIG.PLAYER_SIZE + 60;
-    targetY = Player.y + 15;
-  }
 
   var originX = Player.x + CONFIG.PLAYER_SIZE / 2;
   var originY = Player.y + CONFIG.PLAYER_SIZE / 2;
@@ -131,8 +134,8 @@ Game.fire = function () {
   Game.bullets.push({
     x: originX,
     y: originY,
-    vx: (dx / length) * 10,
-    vy: (dy / length) * 10,
+    vx: (dx / length) * 12,
+    vy: (dy / length) * 12,
     life: 0,
     enemy: false
   });
@@ -145,7 +148,7 @@ Game.updateBullets = function () {
     b.y += b.vy;
     b.life += 1;
 
-    if (Game.boss && !b.enemy && Math.abs(b.x - Game.boss.x) < 30 && Math.abs(b.y - (Game.boss.y + 35)) < 45) {
+    if (Game.boss && !b.enemy && Math.abs(b.x - Game.boss.x) < 35 && Math.abs(b.y - (Game.boss.y + 0)) < 35) {
       Game.boss.health -= 1;
       Game.boss.flash = 8;
       Game.score += 250;
@@ -153,9 +156,9 @@ Game.updateBullets = function () {
       Game.bullets.splice(i, 1);
       if (Game.boss.health <= 0) {
         Game.boss = null;
-        Game.score += 1000;
+        Game.score += 2000;
         AudioFX.bossDown();
-        Game.showMessage("BOSS DELETED // FIND THE EXIT GATE");
+        Game.showMessage("CELESTIAL ENTITY ELIMINATED // FIND THE EXIT GATE");
       }
       continue;
     }
@@ -164,12 +167,12 @@ Game.updateBullets = function () {
       Game.bullets.splice(i, 1);
       if (Player.takeDamage()) {
         Game.mode = "dead";
-        Game.showMessage("BOSS BLAST // PRESS R TO REBOOT");
+        Game.showMessage("CELESTIAL BLAST // PRESS R TO REBOOT");
       }
       continue;
     }
 
-    if (b.life > 100 || b.x < Draw.cameraX - 120 || b.x > Level.pixelWidth() + 200 || b.y < -40 || b.y > CONFIG.CANVAS_H + 40) {
+    if (b.life > 150 || b.x < Draw.cameraX - 120 || b.x > Level.pixelWidth() + 200 || b.y < -40 || b.y > CONFIG.CANVAS_H + 40) {
       Game.bullets.splice(i, 1);
     }
   }
@@ -180,14 +183,47 @@ Game.updateBoss = function () {
   var b = Game.boss;
   b.shotClock += 1;
   b.flash = Math.max(0, b.flash - 1);
-  b.y = 235 + Math.sin(b.shotClock / 35) * 55;
-  if (b.shotClock % 110 === 0) {
-    Game.bullets.push({ x: b.x, y: b.y + 35, vx: -3.2, vy: 0, life: 0, enemy: true });
-    AudioFX.tone(95, 0.12, "sawtooth", 0.035);
+  
+  // Angel hovering pattern
+  b.y = 120 + Math.sin(b.shotClock / 45) * 60 + Math.cos(b.shotClock / 70) * 40;
+  
+  // Laser lightning attacks - more aggressive pattern
+  if (b.shotClock % 60 === 0) {
+    // Spread laser pattern
+    for (var angle = -30; angle <= 30; angle += 15) {
+      var rad = (angle + 90) * Math.PI / 180;
+      Game.bullets.push({ 
+        x: b.x, 
+        y: b.y, 
+        vx: Math.cos(rad) * 2.5, 
+        vy: Math.sin(rad) * 2.5 + 3.5, 
+        life: 0, 
+        enemy: true 
+      });
+    }
+    AudioFX.holyLaser();
+    AudioFX.lightning();
   }
-  if (Math.abs(Player.x - b.x) < 48 && Math.abs(Player.y - b.y) < 70 && Player.takeDamage()) {
+  
+  // Direct shots at player
+  if (b.shotClock % 120 === 60) {
+    var dx = Player.x - b.x;
+    var dy = Player.y - b.y;
+    var len = Math.hypot(dx, dy) || 1;
+    Game.bullets.push({ 
+      x: b.x, 
+      y: b.y, 
+      vx: (dx / len) * 3, 
+      vy: (dy / len) * 3, 
+      life: 0, 
+      enemy: true 
+    });
+    AudioFX.holyLaser();
+  }
+  
+  if (Math.abs(Player.x - b.x) < 60 && Math.abs(Player.y - b.y) < 80 && Player.takeDamage()) {
     Game.mode = "dead";
-    Game.showMessage("BOSS HIT // PRESS R TO REBOOT");
+    Game.showMessage("CELESTIAL TOUCH // PRESS R TO REBOOT");
   }
 };
 
