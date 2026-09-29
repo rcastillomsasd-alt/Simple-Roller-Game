@@ -1,8 +1,4 @@
-Draw.setup();
-bindTouch();
-bindMenu();
-Level.loadData(function () {
-  Game.mode = "menu";
-  showMenu();
-  Game.loop();
-});
+(function () {
+  if (window.__neonRollerInitGuard) return;
+  window.__neonRollerInitGuard = true;
+})();
