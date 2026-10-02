@@ -9,7 +9,8 @@ var Game = {
   lastShot: 0,
   exitRequested: false,
   previousLevel: 0,
-  campaignTransitioned: false
+  campaignTransitioned: false,
+  wave: 1
 };
 
 var AudioFX = {
@@ -28,7 +29,7 @@ var AudioFX = {
       if (!AudioFX.ctx) return;
       var osc = AudioFX.ctx.createOscillator();
       var gain = AudioFX.ctx.createGain();
-      osc.type = type || "square";
+      osc.type = type || "sine";
       osc.frequency.value = freq;
       gain.gain.setValueAtTime((volume === undefined ? 0.04 : volume) * AudioFX.masterVolume, AudioFX.ctx.currentTime);
       gain.gain.exponentialRampToValueAtTime(0.001, AudioFX.ctx.currentTime + duration);
@@ -38,23 +39,24 @@ var AudioFX = {
       osc.stop(AudioFX.ctx.currentTime + duration);
     } catch (e) {}
   },
-  shoot: function () { AudioFX.tone(720, 0.12, "square", 0.08 * AudioFX.gunVolume); },
-  hurt: function () { AudioFX.tone(110, 0.22, "sawtooth", 0.12 * AudioFX.masterVolume); },
-  bossHit: function () { AudioFX.tone(240, 0.15, "triangle", 0.12 * AudioFX.masterVolume); },
-  bossDown: function () { AudioFX.tone(70, 0.8, "sawtooth", 0.14 * AudioFX.masterVolume); },
+  shoot: function () { AudioFX.tone(520, 0.12, "triangle", 0.07 * AudioFX.gunVolume); },
+  hurt: function () { AudioFX.tone(120, 0.2, "sawtooth", 0.1 * AudioFX.masterVolume); },
+  bossHit: function () { AudioFX.tone(200, 0.15, "triangle", 0.12 * AudioFX.masterVolume); },
+  bossDown: function () { AudioFX.tone(80, 0.8, "sawtooth", 0.12 * AudioFX.masterVolume); },
   holyLaser: function () {
-    AudioFX.tone(1200, 0.08, "sine", 0.16 * AudioFX.masterVolume);
-    AudioFX.tone(800, 0.06, "sine", 0.12 * AudioFX.masterVolume);
+    AudioFX.tone(640, 0.08, "sine", 0.14 * AudioFX.masterVolume);
+    AudioFX.tone(420, 0.05, "sine", 0.1 * AudioFX.masterVolume);
   },
   lightning: function () {
-    AudioFX.tone(150, 0.04, "sawtooth", 0.18 * AudioFX.masterVolume);
-    AudioFX.tone(300, 0.03, "square", 0.14 * AudioFX.masterVolume);
+    AudioFX.tone(180, 0.04, "sawtooth", 0.18 * AudioFX.masterVolume);
+    AudioFX.tone(260, 0.03, "square", 0.1 * AudioFX.masterVolume);
   }
 };
 
 Game.startLevel = function (n, resetScore) {
   if (!Level.levels || !Level.levels[n]) return;
   Game.levelNumber = n;
+  Game.wave = Math.max(1, n + 1);
   Level.build(n);
   Player.reset();
   Game.bullets = [];
@@ -63,9 +65,9 @@ Game.startLevel = function (n, resetScore) {
   Game.campaignTransitioned = false;
   if (resetScore) Game.score = 0;
   Game.startTime = performance.now();
-  Game.showMessage(Level.secret ? "ANGEL CORE DETECTED // DEFEAT THE CELESTIAL ENTITY" : "");
+  Game.showMessage(Level.secret ? "THE HUSH HAS A HEART // FACE THE ANCIENT MONSTER" : "THE WOODS STIR // THE HUNT BEGINS");
   Game.updateHud();
-  if (Slimes) Slimes.reset();
+  if (Monsters) Monsters.reset();
 };
 
 Game.unlockSecret = function () {
@@ -73,14 +75,14 @@ Game.unlockSecret = function () {
   Game.unlockedSecret = true;
   Game.previousLevel = Game.levelNumber;
   Game.startLevel(10, true);
-  Game.showMessage("HIDDEN SECTOR UNLOCKED // DEFEAT THE CELESTIAL ANGEL BOSS");
+  Game.showMessage("THE GLADE OPENS // THE DEEP HUSH AWAITS");
 };
 
 Game.exitSecret = function () {
   if (Level.secret) {
     var target = typeof Game.previousLevel === "number" ? Game.previousLevel : 0;
     Game.startLevel(target, true);
-    Game.showMessage("RETURNED TO PREVIOUS SECTOR");
+    Game.showMessage("YOU RETURN TO THE QUIET TRAIL");
   }
 };
 
@@ -92,26 +94,20 @@ Game.showMessage = function (text) {
 Game.updateHud = function () {
   if (!Level || !Level.name) return;
   var levelName = document.getElementById("levelName");
-  var scoreEl = document.getElementById("score");
-  var totalEl = document.getElementById("total");
-  var timeEl = document.getElementById("time");
+  var healthEl = document.getElementById("health");
+  var waveEl = document.getElementById("wave");
   var bossHud = document.getElementById("bossHud");
   var bossHealth = document.getElementById("bossHealth");
   var statusText = document.getElementById("statusText");
   var exitButton = document.getElementById("exitSecret");
 
   if (levelName) levelName.textContent = Level.name;
-  if (scoreEl) scoreEl.textContent = String(Game.score).padStart(3, "0");
-  if (totalEl) totalEl.textContent = String(Level.collectibles.length).padStart(3, "0");
-  if (statusText) statusText.textContent = Level.secret ? "ANGEL SIGNAL" : "SYSTEM ONLINE";
-  if (timeEl) timeEl.textContent = Game.formatTime((performance.now() - Game.startTime) / 1000);
-  if (bossHud) bossHud.style.display = Game.boss ? "block" : "none";
+  if (healthEl) healthEl.textContent = String(Player && typeof Player.health === "number" ? Player.health : 3);
+  if (waveEl) waveEl.textContent = String(Game.wave || 1);
+  if (statusText) statusText.textContent = Level.secret ? "HUSHED" : "CALM";
+  if (bossHud) bossHud.classList.toggle("active", !!Game.boss);
   if (bossHealth && Game.boss) bossHealth.textContent = String(Game.boss.health);
   if (exitButton) exitButton.style.display = Level.secret ? "inline-block" : "none";
-};
-
-Game.formatTime = function (seconds) {
-  return String(Math.floor(seconds / 60)).padStart(2, "0") + ":" + String(Math.floor(seconds % 60)).padStart(2, "0");
 };
 
 Game.fire = function () {
@@ -122,6 +118,7 @@ Game.fire = function () {
   AudioFX.shoot();
 
   var canvas = document.getElementById("game");
+  if (!canvas) return;
   var targetX = Input.cursorX + Draw.cameraX;
   var targetY = Input.cursorY;
 
@@ -134,8 +131,8 @@ Game.fire = function () {
   Game.bullets.push({
     x: originX,
     y: originY,
-    vx: (dx / length) * 12,
-    vy: (dy / length) * 12,
+    vx: (dx / length) * 11,
+    vy: (dy / length) * 11,
     life: 0,
     enemy: false
   });
@@ -148,7 +145,7 @@ Game.updateBullets = function () {
     b.y += b.vy;
     b.life += 1;
 
-    if (Game.boss && !b.enemy && Math.abs(b.x - Game.boss.x) < 35 && Math.abs(b.y - (Game.boss.y + 0)) < 35) {
+    if (Game.boss && !b.enemy && Math.abs(b.x - Game.boss.x) < 35 && Math.abs(b.y - Game.boss.y) < 35) {
       Game.boss.health -= 1;
       Game.boss.flash = 8;
       Game.score += 250;
@@ -158,7 +155,7 @@ Game.updateBullets = function () {
         Game.boss = null;
         Game.score += 2000;
         AudioFX.bossDown();
-        Game.showMessage("CELESTIAL ENTITY ELIMINATED // FIND THE EXIT GATE");
+        Game.showMessage("THE HUSH IS BROKEN // THE GATE IS NOW OPEN");
       }
       continue;
     }
@@ -167,7 +164,7 @@ Game.updateBullets = function () {
       Game.bullets.splice(i, 1);
       if (Player.takeDamage()) {
         Game.mode = "dead";
-        Game.showMessage("CELESTIAL BLAST // PRESS R TO REBOOT");
+        Game.showMessage("THE FOREST STRIKES // PRESS R TO RETURN");
       }
       continue;
     }
@@ -183,47 +180,42 @@ Game.updateBoss = function () {
   var b = Game.boss;
   b.shotClock += 1;
   b.flash = Math.max(0, b.flash - 1);
-  
-  // Angel hovering pattern
-  b.y = 120 + Math.sin(b.shotClock / 45) * 60 + Math.cos(b.shotClock / 70) * 40;
-  
-  // Laser lightning attacks - more aggressive pattern
+  b.y = 120 + Math.sin(b.shotClock / 38) * 62 + Math.cos(b.shotClock / 62) * 30;
+
   if (b.shotClock % 60 === 0) {
-    // Spread laser pattern
     for (var angle = -30; angle <= 30; angle += 15) {
       var rad = (angle + 90) * Math.PI / 180;
-      Game.bullets.push({ 
-        x: b.x, 
-        y: b.y, 
-        vx: Math.cos(rad) * 2.5, 
-        vy: Math.sin(rad) * 2.5 + 3.5, 
-        life: 0, 
-        enemy: true 
+      Game.bullets.push({
+        x: b.x,
+        y: b.y,
+        vx: Math.cos(rad) * 2.8,
+        vy: Math.sin(rad) * 2.8 + 2.8,
+        life: 0,
+        enemy: true
       });
     }
     AudioFX.holyLaser();
     AudioFX.lightning();
   }
-  
-  // Direct shots at player
+
   if (b.shotClock % 120 === 60) {
     var dx = Player.x - b.x;
     var dy = Player.y - b.y;
     var len = Math.hypot(dx, dy) || 1;
-    Game.bullets.push({ 
-      x: b.x, 
-      y: b.y, 
-      vx: (dx / len) * 3, 
-      vy: (dy / len) * 3, 
-      life: 0, 
-      enemy: true 
+    Game.bullets.push({
+      x: b.x,
+      y: b.y,
+      vx: (dx / len) * 3,
+      vy: (dy / len) * 3,
+      life: 0,
+      enemy: true
     });
     AudioFX.holyLaser();
   }
-  
+
   if (Math.abs(Player.x - b.x) < 60 && Math.abs(Player.y - b.y) < 80 && Player.takeDamage()) {
     Game.mode = "dead";
-    Game.showMessage("CELESTIAL TOUCH // PRESS R TO REBOOT");
+    Game.showMessage("THE HUSH DEVOURS // PRESS R TO RESTART");
   }
 };
 
@@ -233,12 +225,13 @@ Game.update = function () {
     Input.restart = false;
     return;
   }
+
   if (Game.mode !== "playing") return;
 
   Player.update();
   Game.updateBullets();
   Game.updateBoss();
-  if (Slimes && Slimes.update) Slimes.update();
+  if (Monsters && Monsters.update) Monsters.update();
 
   Level.collectibles.forEach(function (g) {
     if (!g.got && Math.hypot(Player.x + 15 - g.x, Player.y + 15 - g.y) < 22) {
@@ -249,7 +242,7 @@ Game.update = function () {
 
   if (Player.isDead()) {
     Game.mode = "dead";
-    Game.showMessage("SIGNAL LOST // PRESS R TO REBOOT");
+    Game.showMessage("THE FOREST CLAIMS YOU // PRESS R TO RETURN");
   } else if (Player.hasWon()) {
     if (Level.secret) {
       Game.exitSecret();
@@ -258,10 +251,10 @@ Game.update = function () {
       var nextLevel = Game.levelNumber + 1;
       if (Level.levels[nextLevel]) {
         Game.startLevel(nextLevel, false);
-        Game.showMessage("SECTOR CLEAR // TELEPORTING TO NEXT LEVEL");
+        Game.showMessage("PATH CLEAR // INTO THE NEXT GLADE");
       } else {
         Game.mode = "won";
-        Game.showMessage("ALL SECTORS CLEARED // PRESS R TO RESTART");
+        Game.showMessage("ALL PATHS RESTORED // PRESS R TO RESTART");
       }
     }
   }

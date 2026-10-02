@@ -1,42 +1,53 @@
-var Slimes = { list: [], nextSpawn: 0, maxSpawn: 5 };
-Slimes.reset = function () {
-  Slimes.list = [];
-  Slimes.nextSpawn = 0;
+var Monsters = { list: [], nextSpawn: 0, wave: 1 };
+
+Monsters.reset = function () {
+  Monsters.list = [];
+  Monsters.nextSpawn = 0;
+  Monsters.wave = Game && typeof Game.wave === "number" ? Game.wave : 1;
 };
 
-Slimes.spawn = function () {
+Monsters.spawn = function () {
   if (!Game || typeof Game.levelNumber !== "number") return;
-  var cap = Math.min(8, 2 + Math.floor(Math.max(0, Game.levelNumber) / 2));
-  if (Slimes.list.length >= cap) return;
-  var x = Math.min(Math.max(240, Player.x + 360 + Slimes.list.length * 180), Math.max(320, Level.pixelWidth() - 80));
-  Slimes.list.push({
+  var cap = Math.min(12, 3 + Math.floor((Game.wave || 1) * 1.2));
+  if (Monsters.list.length >= cap) return;
+  var x = Math.min(Math.max(240, Player.x + 360 + Monsters.list.length * 180), Math.max(320, Level.pixelWidth() - 120));
+  var roll = Math.random();
+  var kind = roll < 0.45 ? "moss" : roll < 0.8 ? "shade" : "fang";
+  var baseHealth = kind === "fang" ? 2 : kind === "shade" ? 1 : 1;
+
+  Monsters.list.push({
     x: x,
-    y: 250 + (Slimes.list.length % 2) * 30,
+    y: 250 + (Monsters.list.length % 3) * 28,
     radius: 18,
-    health: 1 + Math.min(3, Math.floor(Game.levelNumber / 2.5)),
+    health: baseHealth + Math.min(3, Math.floor((Game.wave || 1) / 2)),
     hit: 0,
-    speed: 0.8 + Game.levelNumber * 0.15,
-    direction: Player.x < x ? -1 : 1
+    speed: 0.8 + (Game.wave || 1) * 0.16,
+    direction: Player.x < x ? -1 : 1,
+    kind: kind,
+    bob: Math.random() * Math.PI * 2
   });
 };
 
-Slimes.update = function () {
+Monsters.update = function () {
   if (Game.mode !== "playing") return;
-  if (Game.levelNumber >= 0 && Slimes.list.length < Math.min(8, 2 + Math.floor(Game.levelNumber / 2)) && performance.now() > Slimes.nextSpawn) {
-    Slimes.spawn();
-    Slimes.nextSpawn = performance.now() + Math.max(900, 2200 - Game.levelNumber * 160);
+  Monsters.wave = Game.wave || 1;
+  var cap = Math.min(12, 3 + Math.floor(Monsters.wave * 1.2));
+  if (Monsters.list.length < cap && performance.now() > Monsters.nextSpawn) {
+    Monsters.spawn();
+    Monsters.nextSpawn = performance.now() + Math.max(700, 1700 - (Monsters.wave || 1) * 90);
   }
 
-  for (var i = Slimes.list.length - 1; i >= 0; i--) {
-    var s = Slimes.list[i];
-    s.hit = Math.max(0, s.hit - 1);
-    s.direction = Player.x < s.x ? -1 : 1;
-    s.x += s.direction * s.speed;
+  for (var i = Monsters.list.length - 1; i >= 0; i--) {
+    var m = Monsters.list[i];
+    m.hit = Math.max(0, m.hit - 1);
+    m.direction = Player.x < m.x ? -1 : 1;
+    m.x += m.direction * m.speed;
+    m.bob += 0.08;
 
-    if (Math.abs(s.x - (Player.x + 15)) < s.radius + 18 && Math.abs(s.y - (Player.y + 15)) < s.radius + 18) {
+    if (Math.abs(m.x - (Player.x + 15)) < m.radius + 18 && Math.abs(m.y - (Player.y + 15)) < m.radius + 18) {
       if (Player.takeDamage()) {
         Game.mode = "dead";
-        Game.showMessage("SLIME SWARM // PRESS R TO REBOOT");
+        Game.showMessage("A MONSTER LURKS // PRESS R TO RETURN");
       }
     }
 
@@ -44,14 +55,14 @@ Slimes.update = function () {
       for (var b = Game.bullets.length - 1; b >= 0; b--) {
         var bullet = Game.bullets[b];
         if (bullet.enemy) continue;
-        if (Math.abs(bullet.x - s.x) < 22 && Math.abs(bullet.y - s.y) < 22) {
-          s.health -= 1;
-          s.hit = 9;
+        if (Math.abs(bullet.x - m.x) < 18 && Math.abs(bullet.y - m.y) < 18) {
+          m.health -= 1;
+          m.hit = 8;
           Game.bullets.splice(b, 1);
-          if (s.health <= 0) {
-            Slimes.list.splice(i, 1);
-            Game.score += 120;
-            AudioFX.tone(200, 0.12, "triangle", 0.06);
+          if (m.health <= 0) {
+            Monsters.list.splice(i, 1);
+            Game.score += 160;
+            AudioFX.tone(240 + Math.random() * 120, 0.12, "triangle", 0.06);
           }
           break;
         }
@@ -60,26 +71,55 @@ Slimes.update = function () {
   }
 };
 
-Slimes.draw = function (c) {
-  Slimes.list.forEach(function (s) {
+Monsters.draw = function (c) {
+  Monsters.list.forEach(function (m) {
     c.save();
-    c.translate(s.x - Draw.cameraX, s.y);
-    c.fillStyle = s.hit ? "#fff" : "#76ff8d";
-    c.shadowColor = "#76ff8d";
+    c.translate(m.x - Draw.cameraX, m.y + Math.sin(m.bob) * 5);
+    c.strokeStyle = m.hit ? "#f5f1e7" : m.kind === "shade" ? "#b8c2d8" : m.kind === "fang" ? "#d2a074" : "#8ec08e";
+    c.fillStyle = m.hit ? "#f7f7ee" : m.kind === "shade" ? "#6c7478" : m.kind === "fang" ? "#b7774d" : "#5a8f68";
+    c.lineWidth = 2;
+    c.shadowColor = m.hit ? "#f7f7ee" : "#89c096";
     c.shadowBlur = 18;
-    c.beginPath();
-    c.arc(0, 25, 18, Math.PI, 0);
-    c.lineTo(18, 34);
-    c.lineTo(-18, 34);
-    c.closePath();
-    c.fill();
-    c.fillStyle = "#07121b";
+
+    if (m.kind === "shade") {
+      c.beginPath();
+      c.moveTo(0, -18);
+      c.lineTo(18, 0);
+      c.lineTo(0, 18);
+      c.lineTo(-18, 0);
+      c.closePath();
+      c.fill();
+      c.stroke();
+    } else if (m.kind === "fang") {
+      c.beginPath();
+      c.moveTo(-18, 10);
+      c.lineTo(-8, -20);
+      c.lineTo(0, 10);
+      c.lineTo(18, -20);
+      c.lineTo(18, 12);
+      c.lineTo(-18, 12);
+      c.closePath();
+      c.fill();
+      c.stroke();
+    } else {
+      c.beginPath();
+      c.arc(0, 4, 18, Math.PI, 0);
+      c.lineTo(18, 26);
+      c.lineTo(-18, 26);
+      c.closePath();
+      c.fill();
+      c.stroke();
+    }
+
     c.shadowBlur = 0;
-    c.fillRect(-8, 16, 5, 7);
-    c.fillRect(3, 16, 5, 7);
+    c.fillStyle = "rgba(18, 24, 22, 0.9)";
+    c.fillRect(-7, 8, 5, 7);
+    c.fillRect(2, 8, 5, 7);
     c.restore();
   });
 };
+
+var Slimes = Monsters;
 
 var MenuMusic = { timer: null, active: false, step: 0 };
 MenuMusic.start = function () {
@@ -88,13 +128,13 @@ MenuMusic.start = function () {
   if (!AudioFX.ctx) return;
   MenuMusic.active = true;
   MenuMusic.step = 0;
-  var notes = [220, 277.18, 329.63, 277.18, 246.94, 293.66, 369.99, 293.66, 220, 196, 261.63, 329.63];
+  var notes = [196, 220, 261.63, 293.66, 329.63, 293.66, 261.63, 220, 196, 174.61, 220, 246.94];
   MenuMusic.timer = setInterval(function () {
     if (!MenuMusic.active || !AudioFX.ctx) return;
     var note = notes[MenuMusic.step % notes.length];
     MenuMusic.step += 1;
-    AudioFX.tone(note, 0.2, "triangle", 0.04 * (1.2 + AudioFX.masterVolume));
-  }, 200);
+    AudioFX.tone(note, 0.2, "triangle", 0.04 * (1 + AudioFX.masterVolume));
+  }, 260);
 };
 
 MenuMusic.stop = function () {
@@ -105,11 +145,11 @@ MenuMusic.stop = function () {
   }
 };
 
-AudioFX.masterVolume = Number(localStorage.getItem("neonRollerMasterVolume"));
+AudioFX.masterVolume = Number(localStorage.getItem("whisperMasterVolume"));
 if (!isFinite(AudioFX.masterVolume) || AudioFX.masterVolume < 0) AudioFX.masterVolume = 1;
 AudioFX.masterVolume = Math.min(1.5, Math.max(0, AudioFX.masterVolume));
-AudioFX.gunVolume = Number(localStorage.getItem("neonRollerGunVolume"));
-if (!isFinite(AudioFX.gunVolume) || AudioFX.gunVolume < 0) AudioFX.gunVolume = 1.2;
+AudioFX.gunVolume = Number(localStorage.getItem("whisperGunVolume"));
+if (!isFinite(AudioFX.gunVolume) || AudioFX.gunVolume < 0) AudioFX.gunVolume = 1.1;
 AudioFX.gunVolume = Math.min(1.5, Math.max(0, AudioFX.gunVolume));
 
 var originalTone = AudioFX.tone;
@@ -118,24 +158,14 @@ AudioFX.tone = function (freq, duration, type, volume) {
   var finalVolume = Math.max(0, Math.min(1.5, base * AudioFX.masterVolume));
   originalTone.call(AudioFX, freq, duration, type, finalVolume);
 };
-AudioFX.shoot = function () {
-  AudioFX.tone(720, 0.12, "square", 0.08 * AudioFX.gunVolume);
-};
-AudioFX.hurt = function () {
-  AudioFX.tone(110, 0.22, "sawtooth", 0.12 * AudioFX.masterVolume);
-};
-AudioFX.bossHit = function () {
-  AudioFX.tone(240, 0.15, "triangle", 0.12 * AudioFX.masterVolume);
-};
-AudioFX.bossDown = function () {
-  AudioFX.tone(70, 0.8, "sawtooth", 0.14 * AudioFX.masterVolume);
-};
-AudioFX.holyLaser = function () {
-  AudioFX.tone(1200, 0.08, "sine", 0.16 * AudioFX.masterVolume);
-};
-AudioFX.lightning = function () {
-  AudioFX.tone(150, 0.04, "sawtooth", 0.18 * AudioFX.masterVolume);
-};
+
+function updateVolumeControl(id, value) {
+  var key = id === "masterVolume" ? "masterVolume" : "gunVolume";
+  AudioFX[key] = Math.max(0, Math.min(1.5, Number(value) || 0));
+  localStorage.setItem(id === "masterVolume" ? "whisperMasterVolume" : "whisperGunVolume", String(AudioFX[key]));
+  var output = document.getElementById(id + "Value");
+  if (output) output.textContent = Math.round(AudioFX[key] * 100) + "%";
+}
 
 var MenuArt = { canvas: null, ctx: null, frame: 0, bound: false };
 MenuArt.setup = function () {
@@ -165,63 +195,53 @@ MenuArt.loop = function () {
   var h = MenuArt.canvas.clientHeight || window.innerHeight;
   var t = MenuArt.frame / 60;
   c.clearRect(0, 0, w, h);
-  c.fillStyle = "#0b1730";
+
+  var sky = c.createLinearGradient(0, 0, 0, h);
+  sky.addColorStop(0, "#dfe7d5");
+  sky.addColorStop(0.4, "#bfd1b4");
+  sky.addColorStop(1, "#29473d");
+  c.fillStyle = sky;
   c.fillRect(0, 0, w, h);
 
-  c.strokeStyle = "rgba(84,245,233,0.14)";
-  c.lineWidth = 2;
-  for (var x = -w; x < w * 2; x += 60) {
+  c.fillStyle = "rgba(255,255,255,0.14)";
+  for (var i = 0; i < 8; i++) {
+    var x = ((i * 140 + t * 35) % (w + 180)) - 80;
+    var y = 90 + (i % 3) * 45;
     c.beginPath();
-    c.moveTo(x + (t * 20) % 60, h);
-    c.lineTo(x + 180 + (t * 20) % 60, h * 0.52);
-    c.stroke();
-  }
-
-  var px = w * 0.42 + Math.sin(t * 1.8) * w * 0.03;
-  var py = h * 0.56 - Math.abs(Math.sin(t * 2.3)) * h * 0.13;
-  c.save();
-  c.translate(px, py);
-  c.rotate(Math.sin(t * 2.3) * 0.05);
-  c.shadowColor = "#54f5e9";
-  c.shadowBlur = 18;
-  c.fillStyle = "#54f5e9";
-  c.beginPath();
-  c.arc(0, 0, 24, 0, Math.PI * 2);
-  c.fill();
-  c.fillStyle = "#ff4f9a";
-  c.fillRect(-15, 22, 30, 10);
-  c.strokeStyle = "#ffd166";
-  c.lineWidth = 7;
-  c.beginPath();
-  c.moveTo(-8, 28); c.lineTo(-25, 50);
-  c.moveTo(8, 28); c.lineTo(24, 50);
-  c.stroke();
-  c.restore();
-
-  for (var i = 0; i < 5; i++) {
-    var sx = w * (0.18 + i * 0.18) + Math.sin(t * 1.5 + i) * 16;
-    var sy = h * 0.72 - Math.abs(Math.sin(t * 1.7 + i)) * 12;
-    c.fillStyle = "#65ff75";
-    c.shadowColor = "#65ff75";
-    c.shadowBlur = 14;
-    c.beginPath();
-    c.arc(sx, sy, 18, Math.PI, 0);
-    c.lineTo(sx + 18, sy + 10);
-    c.lineTo(sx - 18, sy + 10);
-    c.closePath();
+    c.arc(x, y, 26, 0, Math.PI * 2);
     c.fill();
   }
+
+  c.fillStyle = "rgba(43, 62, 51, 0.65)";
+  for (var n = 0; n < 14; n++) {
+    var treeX = ((n * 90 + t * 18) % (w + 120)) - 50;
+    var treeH = 120 + (n % 5) * 30;
+    c.fillRect(treeX, h - treeH, 12, treeH);
+    c.beginPath();
+    c.arc(treeX + 6, h - treeH - 20, 32, 0, Math.PI * 2);
+    c.fill();
+  }
+
+  c.fillStyle = "rgba(38, 56, 47, 0.82)";
+  c.fillRect(0, h * 0.7, w, h * 0.3);
+
+  var px = w * 0.52 + Math.sin(t * 1.2) * w * 0.08;
+  var py = h * 0.52 - Math.abs(Math.sin(t * 1.8)) * h * 0.1;
+  c.save();
+  c.translate(px, py);
+  c.fillStyle = "rgba(201, 175, 116, 0.18)";
+  c.beginPath();
+  c.arc(0, 0, 64, 0, Math.PI * 2);
+  c.fill();
+  c.fillStyle = "#f6e6bc";
+  c.beginPath();
+  c.arc(0, 8, 22, 0, Math.PI * 2);
+  c.fill();
+  c.restore();
+
   MenuArt.frame += 1;
   requestAnimationFrame(MenuArt.loop);
 };
-
-function updateVolumeControl(id, value) {
-  var key = id === "masterVolume" ? "masterVolume" : "gunVolume";
-  AudioFX[key] = Math.max(0, Math.min(1.5, Number(value) || 0));
-  localStorage.setItem(id === "masterVolume" ? "neonRollerMasterVolume" : "neonRollerGunVolume", String(AudioFX[key]));
-  var output = document.getElementById(id + "Value");
-  if (output) output.textContent = Math.round(AudioFX[key] * 100) + "%";
-}
 
 function showMenu() {
   var menu = document.getElementById("menuScreen");
@@ -245,7 +265,7 @@ function startGame() {
 
 function returnToMenu() {
   Game.mode = "menu";
-  Slimes.reset();
+  if (Monsters) Monsters.reset();
   var menu = document.getElementById("menuScreen");
   var game = document.getElementById("gameSection");
   if (menu) menu.hidden = false;

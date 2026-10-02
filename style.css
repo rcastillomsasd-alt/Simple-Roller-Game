@@ -1,8 +1,9 @@
 html, body {
   min-height: 100%;
   margin: 0;
-  background: #101827;
-  font-family: Arial, Helvetica, sans-serif;
+  background: #223a30;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color: #ebeadf;
 }
 
 body {
@@ -21,11 +22,12 @@ body {
   justify-content: space-between;
   gap: 18px;
   padding: 10px 0 18px;
+  border-bottom: 1px solid rgba(170, 159, 131, 0.2);
 }
 
 .eyebrow {
   margin: 0;
-  color: #f6b73c;
+  color: #9fb98d;
   letter-spacing: 5px;
   text-transform: uppercase;
   font-size: 10px;
@@ -35,7 +37,7 @@ body {
 .topbar h1,
 .menu-screen h2 {
   margin: 0;
-  color: #f7fafc;
+  color: #f8f4eb;
   font-weight: 900;
   letter-spacing: 2px;
   text-transform: uppercase;
@@ -43,15 +45,15 @@ body {
 
 .topbar h1 span,
 .menu-screen h2 span {
-  color: #f6b73c;
-  text-shadow: 0 0 14px rgba(246, 183, 60, 0.7);
+  color: #c9af74;
+  text-shadow: 0 0 14px rgba(201, 175, 116, 0.35);
 }
 
 .status {
   display: flex;
   align-items: center;
   gap: 8px;
-  color: #ffd166;
+  color: #c9af74;
   font-size: 11px;
   letter-spacing: 2px;
   text-transform: uppercase;
@@ -63,8 +65,8 @@ body {
   width: 10px;
   height: 10px;
   border-radius: 50%;
-  background: #f6b73c;
-  box-shadow: 0 0 12px rgba(246, 183, 60, 0.8);
+  background: #9fb98d;
+  box-shadow: 0 0 12px rgba(159, 185, 141, 0.6);
   animation: pulse 2s infinite;
 }
 
@@ -81,10 +83,10 @@ body {
   margin: 0 auto;
   padding: 0;
   overflow: hidden;
-  border: 2px solid rgba(246, 183, 60, 0.4);
+  border: 2px solid rgba(159, 185, 141, 0.3);
   border-radius: 14px;
-  background: #0d1627;
-  box-shadow: 0 0 30px rgba(246, 183, 60, 0.18), inset 0 0 25px rgba(255, 255, 255, 0.02);
+  background: #1f312c;
+  box-shadow: 0 0 30px rgba(159, 185, 141, 0.12), inset 0 0 25px rgba(255, 255, 255, 0.02);
 }
 
 .game-wrap canvas {
@@ -92,7 +94,7 @@ body {
   width: 100%;
   height: auto;
   max-width: 100%;
-  background: #101827;
+  background: #29473d;
 }
 
 .hud {
@@ -109,16 +111,16 @@ body {
 
 .hud-card {
   padding: 10px 12px;
-  border: 1px solid rgba(246, 183, 60, 0.3);
+  border: 1px solid rgba(159, 185, 141, 0.3);
   border-radius: 10px;
-  background: rgba(16, 24, 39, 0.78);
+  background: rgba(24, 41, 35, 0.78);
   backdrop-filter: blur(4px);
-  box-shadow: 0 0 10px rgba(246, 183, 60, 0.12);
+  box-shadow: 0 0 10px rgba(159, 185, 141, 0.1);
 }
 
 .hud-card small {
   display: block;
-  color: #f6b73c;
+  color: #c9af74;
   letter-spacing: 2px;
   font-size: 9px;
   margin-bottom: 6px;
@@ -126,13 +128,24 @@ body {
 }
 
 .hud-card strong {
-  color: #ffffff;
+  color: #f8f4eb;
   font-size: 17px;
   letter-spacing: 1px;
 }
 
 .boss-hud {
   display: none;
+}
+
+.boss-hud.active {
+  display: block;
+  grid-column: span 2;
+  border-color: rgba(207, 148, 105, 0.5);
+  background: rgba(207, 148, 105, 0.08);
+}
+
+.boss-hud small {
+  color: #d89a6b;
 }
 
 .message {
@@ -142,15 +155,15 @@ body {
   transform: translateX(-50%);
   display: inline-block;
   padding: 8px 12px;
-  border: 1px solid rgba(246, 183, 60, 0.4);
-  background: rgba(16, 24, 39, 0.85);
-  color: #ffd166;
+  border: 1px solid rgba(159, 185, 141, 0.4);
+  background: rgba(24, 41, 35, 0.85);
+  color: #dfead2;
   border-radius: 6px;
   font-size: 11px;
   letter-spacing: 1px;
   font-weight: bold;
   z-index: 3;
-  box-shadow: 0 0 12px rgba(246, 183, 60, 0.2);
+  box-shadow: 0 0 12px rgba(159, 185, 141, 0.15);
 }
 
 .controls {
@@ -159,7 +172,7 @@ body {
   align-items: center;
   gap: 10px;
   padding: 14px 0 0;
-  color: #f6b73c;
+  color: #c9af74;
   font-size: 11px;
   letter-spacing: 1px;
   text-transform: uppercase;
@@ -169,11 +182,11 @@ body {
 .controls kbd {
   display: inline-block;
   padding: 4px 7px;
-  border: 1px solid rgba(246, 183, 60, 0.6);
+  border: 1px solid rgba(159, 185, 141, 0.6);
   border-bottom-width: 3px;
   border-radius: 5px;
-  background: rgba(17, 22, 32, 0.9);
-  color: #ffd166;
+  background: rgba(24, 35, 30, 0.9);
+  color: #dfead2;
   font-weight: 700;
   min-width: 20px;
   text-align: center;
@@ -183,9 +196,9 @@ body {
 
 .controls button,
 .menu-button {
-  border: 1px solid #f6b73c;
-  background: rgba(17, 22, 32, 0.9);
-  color: #f6b73c;
+  border: 1px solid #9fb98d;
+  background: rgba(24, 35, 30, 0.9);
+  color: #9fb98d;
   border-radius: 7px;
   padding: 7px 12px;
   cursor: pointer;
@@ -197,19 +210,15 @@ body {
 
 .controls button:hover,
 .menu-button:hover {
-  background: #f6b73c;
-  color: #101827;
-  box-shadow: 0 0 12px rgba(246, 183, 60, 0.7);
-}
-
-.secret-hint {
-  color: #ffd166;
+  background: #9fb98d;
+  color: #223a30;
+  box-shadow: 0 0 12px rgba(159, 185, 141, 0.6);
 }
 
 .footer {
   padding-top: 18px;
   text-align: center;
-  color: #f6b73c;
+  color: #c9af74;
   font-size: 10px;
   letter-spacing: 3px;
   text-transform: uppercase;
@@ -217,7 +226,7 @@ body {
 }
 
 .footer span {
-  color: #ffd166;
+  color: #9fb98d;
 }
 
 .touch-controls {
@@ -231,9 +240,9 @@ body {
   width: 58px;
   height: 58px;
   border-radius: 50%;
-  border: 2px solid rgba(246, 183, 60, 0.5);
-  background: rgba(17, 22, 32, 0.9);
-  color: #f6b73c;
+  border: 2px solid rgba(159, 185, 141, 0.5);
+  background: rgba(24, 35, 30, 0.9);
+  color: #9fb98d;
   font-size: 24px;
   cursor: pointer;
 }
@@ -242,9 +251,9 @@ body {
   display: none;
   margin: 0 auto 12px;
   padding: 10px 18px;
-  border: 2px solid #ffd166;
-  background: rgba(17, 22, 32, 0.8);
-  color: #ffd166;
+  border: 2px solid #c9af74;
+  background: rgba(24, 35, 30, 0.8);
+  color: #c9af74;
   border-radius: 6px;
   font: 700 10px monospace;
   letter-spacing: 1px;
@@ -253,9 +262,9 @@ body {
 }
 
 .exit-secret:hover {
-  background: #ffd166;
-  color: #101827;
-  box-shadow: 0 0 15px rgba(255, 209, 102, 0.5);
+  background: #c9af74;
+  color: #223a30;
+  box-shadow: 0 0 15px rgba(201, 175, 116, 0.45);
 }
 
 @media (max-width: 780px) {
@@ -279,7 +288,7 @@ body {
   padding: 0;
   border: none;
   border-radius: 0;
-  background: #101827;
+  background: #29473d;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -303,5 +312,5 @@ body {
 
 body:has(.game-wrap:fullscreen),
 body:has(.game-wrap:-webkit-full-screen) {
-  margin: 0; overflow: hidden; background: #101827;
+  margin: 0; overflow: hidden; background: #29473d;
 }

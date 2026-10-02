@@ -1,2 +1,146 @@
-var Draw={canvas:null,ctx:null,cameraX:0};
-Draw.setup=function(){Draw.canvas=document.getElementById("game");Draw.ctx=Draw.canvas.getContext("2d");};Draw.updateCamera=function(){Draw.cameraX=Math.max(0,Math.min(Math.max(0,Level.pixelWidth()-CONFIG.CANVAS_W),Player.x-CONFIG.CANVAS_W*.38));};Draw.everything=function(){var c=Draw.ctx,g=c.createLinearGradient(0,0,0,CONFIG.CANVAS_H);g.addColorStop(0,Level.secret?"#1a1030":"#0d1831");g.addColorStop(1,"#090b18");c.fillStyle=g;c.fillRect(0,0,CONFIG.CANVAS_W,CONFIG.CANVAS_H);Draw.background();Draw.world();Draw.gems();if(Slimes&&Slimes.draw)Slimes.draw(c);Draw.boss();Draw.player();Draw.bullets();Input.clearTransient();};Draw.background=function(){var c=Draw.ctx,drift=Draw.cameraX*.15;c.fillStyle="rgba(255,255,255,.06)";for(var i=0;i<40;i++){var x=((i*173)-drift)%(Level.pixelWidth()+120);if(x<0)x+=Level.pixelWidth()+120;c.fillRect(x-Draw.cameraX,200,1,Math.random()*80+30);}};Draw.world=function(){var c=Draw.ctx,s=CONFIG.TILE,first=Math.floor(Draw.cameraX/s)-1,last=first+Math.ceil(CONFIG.CANVAS_W/s)+2;for(var r=0;r<CONFIG.ROWS;r++)for(var col=first;col<=last;col++){var idx=Level.grid[r]&&Level.grid[r][col];if(!idx||!Level.pieces[idx])continue;var p=Level.pieces[idx],x=(col*s)-Draw.cameraX,y=r*s;c.fillStyle=p.spike?"#ff6b9d":p.finish?"#54f5e9":"#76ff8d";if(p.spike){c.beginPath();c.moveTo(x+s/2,y);c.lineTo(x+s,y+s);c.lineTo(x,y+s);c.closePath();c.fill();}else{c.shadowColor=p.finish?"#54f5e9":"#76ff8d";c.shadowBlur=12;c.fillRect(x,y,s,s);c.shadowBlur=0;}}};Draw.gems=function(){var c=Draw.ctx;Level.collectibles.forEach(function(g){if(g.got)return;c.save();c.translate(g.x,g.y);c.rotate(Math.PI/4);c.shadowColor="#ffd166";c.shadowBlur=18;c.fillStyle="#ffd166";c.fillRect(-6,-6,12,12);c.restore();});};Draw.bullets=function(){var c=Draw.ctx;Game.bullets.forEach(function(b){c.fillStyle=b.enemy?"#ff9d4f":"#ffd166";c.shadowColor=c.fillStyle;c.shadowBlur=12;c.beginPath();c.arc(b.x-Draw.cameraX,b.y,5,0,Math.PI*2);c.fill();});};Draw.boss=function(){if(!Game.boss)return;var c=Draw.ctx,b=Game.boss,screenX=b.x-Draw.cameraX;c.save();c.translate(screenX,b.y);c.shadowColor="#ffeb3b";c.shadowBlur=30;c.fillStyle=b.flash?"#fff":"#ffeb3b";c.beginPath();c.arc(0,0,28,0,Math.PI*2);c.fill();c.fillStyle="rgba(255,235,59,0.3)";c.beginPath();c.arc(0,0,40,0,Math.PI*2);c.fill();c.strokeStyle="#ffeb3b";c.lineWidth=2;for(var i=0;i<8;i++){var angle=i*Math.PI/4;c.beginPath();c.moveTo(0,0);c.lineTo(Math.cos(angle)*35,Math.sin(angle)*35);c.stroke();}c.fillStyle="#fff";c.fillRect(-6,-8,12,4);c.fillRect(-6,4,12,4);c.restore();};Draw.player=function(){var c=Draw.ctx,mechX=Player.x-Draw.cameraX,mechY=Player.y;c.save();c.translate(mechX+15,mechY+15);c.rotate(Player.angle);c.fillStyle="#d32f2f";c.fillRect(-12,-12,24,24);c.fillStyle="#b71c1c";c.fillRect(-10,-10,8,8);c.fillRect(2,-10,8,8);c.fillRect(-10,2,8,8);c.fillRect(2,2,8,8);c.fillStyle="#1565c0";c.fillRect(-14,-4,4,8);c.fillRect(10,-4,4,8);c.fillStyle="#ff6f00";c.beginPath();c.moveTo(-2,12);c.lineTo(2,12);c.lineTo(2,16);c.lineTo(-2,16);c.fill();c.fillStyle="#fdd835";c.fillRect(14,-2,8,4);c.strokeStyle="#fdd835";c.lineWidth=2;c.beginPath();c.moveTo(14,-2);c.lineTo(18,-6);c.stroke();c.beginPath();c.moveTo(14,2);c.lineTo(18,6);c.stroke();c.restore();Player.trail.forEach(function(p,i){c.fillStyle="rgba(84,245,229,"+(i/Player.trail.length)*0.4+")";c.beginPath();c.arc(p.x-Draw.cameraX,p.y,3,0,Math.PI*2);c.fill();});};
+var Draw = { canvas: null, ctx: null, cameraX: 0 };
+
+Draw.setup = function () {
+  Draw.canvas = document.getElementById("game");
+  Draw.ctx = Draw.canvas.getContext("2d");
+};
+
+Draw.updateCamera = function () {
+  if (!Level || typeof Level.pixelWidth !== "function") return;
+  Draw.cameraX = Math.max(0, Math.min(Player.x - CONFIG.CANVAS_W * 0.35, Math.max(0, Level.pixelWidth() - CONFIG.CANVAS_W)));
+};
+
+Draw.drawBackground = function (c) {
+  var sky = c.createLinearGradient(0, 0, 0, CONFIG.CANVAS_H);
+  sky.addColorStop(0, "#dfe7d5");
+  sky.addColorStop(0.5, "#bfd1b4");
+  sky.addColorStop(1, "#2a3d33");
+  c.fillStyle = sky;
+  c.fillRect(0, 0, CONFIG.CANVAS_W, CONFIG.CANVAS_H);
+
+  c.fillStyle = "rgba(255,255,255,0.12)";
+  for (var i = 0; i < 12; i++) {
+    var glowX = ((i * 120 - Draw.cameraX * 0.2) % (CONFIG.CANVAS_W + 160)) - 80;
+    c.beginPath();
+    c.arc(glowX, 80 + (i % 3) * 25, 26, 0, Math.PI * 2);
+    c.fill();
+  }
+
+  c.fillStyle = "rgba(32, 52, 45, 0.9)";
+  for (var ti = 0; ti < 18; ti++) {
+    var tx = (ti * 70 - Draw.cameraX * 0.5) % (CONFIG.CANVAS_W + 120);
+    var tw = 15 + (ti % 4) * 8;
+    var th = 80 + (ti % 5) * 36;
+    c.fillRect(tx - 50, CONFIG.CANVAS_H - th, tw, th);
+    c.beginPath();
+    c.arc(tx - 43, CONFIG.CANVAS_H - th - 14, 28 + (ti % 3) * 7, 0, Math.PI * 2);
+    c.fill();
+    c.beginPath();
+    c.arc(tx + 5, CONFIG.CANVAS_H - th - 10, 24 + (ti % 2) * 8, 0, Math.PI * 2);
+    c.fill();
+  }
+};
+
+Draw.drawTiles = function (c) {
+  if (!Level || !Level.grid) return;
+  var cols = Level.cols || 0;
+  var rows = CONFIG.ROWS;
+  var tile = CONFIG.TILE;
+  for (var row = 0; row < rows; row++) {
+    for (var col = 0; col < cols; col++) {
+      var ch = Level.charAt(col, row);
+      if (ch !== "#") continue;
+      var x = col * tile - Draw.cameraX;
+      var y = row * tile;
+      c.fillStyle = "#496a52";
+      c.fillRect(x, y, tile, tile);
+      c.fillStyle = "rgba(142, 191, 135, 0.15)";
+      c.fillRect(x + 2, y + 2, tile - 4, tile - 4);
+      c.fillStyle = "rgba(28, 42, 36, 0.25)";
+      c.fillRect(x, y + tile - 6, tile, 6);
+    }
+  }
+
+  for (var r = 0; r < rows; r++) {
+    for (var c = 0; c < cols; c++) {
+      var ch = Level.charAt(c, r);
+      if (ch === "^") {
+        var x = c * tile - Draw.cameraX + 5;
+        var y = r * tile + 18;
+        c.fillStyle = "#b6947a";
+        c.beginPath();
+        c.moveTo(x, y + 10);
+        c.lineTo(x + 6, y - 12);
+        c.lineTo(x + 12, y + 10);
+        c.closePath();
+        c.fill();
+      }
+      if (ch === "F") {
+        var fx = c * tile - Draw.cameraX + 6;
+        var fy = r * tile + 6;
+        c.fillStyle = "#f3e7d0";
+        c.fillRect(fx, fy, 22, 22);
+      }
+      if (ch === "G") {
+        var gx = c * tile - Draw.cameraX + 10;
+        var gy = r * tile + 10;
+        c.fillStyle = "#c9af74";
+        c.beginPath();
+        c.arc(gx, gy, 6, 0, Math.PI * 2);
+        c.fill();
+      }
+    }
+  }
+};
+
+Draw.drawPlayer = function (c) {
+  var px = Player.x - Draw.cameraX + CONFIG.PLAYER_SIZE / 2;
+  var py = Player.y + CONFIG.PLAYER_SIZE / 2;
+  c.save();
+  c.translate(px, py);
+  c.rotate(Player.angle || 0);
+  c.fillStyle = "#f5eee0";
+  c.beginPath();
+  c.arc(0, 0, 15, 0, Math.PI * 2);
+  c.fill();
+  c.fillStyle = "#7f9b7d";
+  c.fillRect(-7, 16, 14, 10);
+  c.restore();
+};
+
+Draw.drawBullets = function (c) {
+  Game.bullets.forEach(function (b) {
+    c.fillStyle = b.enemy ? "#c87d67" : "#f1dac0";
+    c.beginPath();
+    c.arc(b.x - Draw.cameraX, b.y, 4, 0, Math.PI * 2);
+    c.fill();
+  });
+};
+
+Draw.everything = function () {
+  var c = Draw.ctx;
+  c.clearRect(0, 0, CONFIG.CANVAS_W, CONFIG.CANVAS_H);
+  Draw.drawBackground(c);
+  Draw.drawTiles(c);
+  if (Monsters && Monsters.draw) Monsters.draw(c);
+  Draw.drawBullets(c);
+  Draw.drawPlayer(c);
+
+  if (Game.boss) {
+    c.save();
+    c.translate(Game.boss.x - Draw.cameraX, Game.boss.y);
+    c.fillStyle = Game.boss.flash ? "#f3d6be" : "#d89a6b";
+    c.shadowColor = "#d89a6b";
+    c.shadowBlur = 18;
+    c.beginPath();
+    c.arc(0, 0, 26, 0, Math.PI * 2);
+    c.fill();
+    c.shadowBlur = 0;
+    c.fillStyle = "rgba(24, 31, 28, 0.8)";
+    c.fillRect(-18, 26, 36, 6);
+    c.restore();
+  }
+};
+
+Draw.canvas = null;
+Draw.ctx = null;

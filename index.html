@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#101827">
-  <title>MICHAEL JORDAN // CHAMPIONSHIP RUN</title>
+  <meta name="theme-color" content="#2d4a3c">
+  <title>Whisper's Haven</title>
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="menu.css">
 </head>
@@ -12,19 +12,19 @@
   <main class="shell">
     <header class="topbar">
       <div>
-        <p class="eyebrow">BULLS LEGEND // 23</p>
-        <h1>MICHAEL <span>JORDAN</span></h1>
+        <p class="eyebrow">WHISPER'S HAVEN</p>
+        <h1>MONSTER <span>SLAYER</span></h1>
       </div>
-      <div class="status"><i></i><span id="statusText">COURT READY</span></div>
+      <div class="status"><i></i><span id="statusText">READY</span></div>
     </header>
 
     <section id="menuScreen" class="menu-screen" aria-label="Main menu">
       <canvas id="menuBackdrop" aria-hidden="true"></canvas>
       <div class="menu-content">
-        <p class="eyebrow">CHAMPIONSHIP SERIES</p>
-        <h2>MICHAEL <span>JORDAN</span></h2>
-        <p class="menu-subtitle">DRIBBLE. JUMP. DOMINATE.</p>
-        <button id="playButton" class="menu-button" type="button">▶ PLAY</button>
+        <p class="eyebrow">FOREST OF ECHOES</p>
+        <h2>WHISPER'S <span>HAVEN</span></h2>
+        <p class="menu-subtitle">Breathe. Listen. Survive.</p>
+        <button id="playButton" class="menu-button" type="button">▶ ENTER THE WOODS</button>
         <button id="settingsButton" class="menu-button secondary" type="button">⚙ SETTINGS</button>
         <button id="menuFullscreenButton" class="menu-button secondary" type="button">⛶ FULLSCREEN</button>
         <div id="settingsPanel" class="settings-panel" hidden>
@@ -34,36 +34,34 @@
       </div>
     </section>
 
-    <section id="gameSection" class="game-wrap" aria-label="Jordan hoops game" hidden>
+    <section id="gameSection" class="game-wrap" aria-label="Monster slayer game" hidden>
       <button id="menuButton" class="corner-menu-button" type="button">MENU</button>
       <canvas id="game" width="960" height="540"></canvas>
       <div class="hud">
-        <div class="hud-card"><small>COURT</small><strong id="levelName">LOADING</strong></div>
-        <div class="hud-card"><small>POINTS</small><strong><span id="score">000</span> <b>/</b> <span id="total">000</span></strong></div>
-        <div class="hud-card"><small>TIME</small><strong id="time">00:00</strong></div>
-        <div class="hud-card boss-hud" id="bossHud"><small>RIVAL HP</small><strong><span id="bossHealth">000</span> / 6</strong></div>
+        <div class="hud-card"><small>REALM</small><strong id="levelName">GLOAMING WOODS</strong></div>
+        <div class="hud-card"><small>HEALTH</small><strong><span id="health">3</span> / 3</strong></div>
+        <div class="hud-card"><small>WAVE</small><strong id="wave">1</strong></div>
+        <div class="hud-card boss-hud" id="bossHud"><small>BOSS</small><strong><span id="bossHealth">0</span> HP</strong></div>
       </div>
-      <div id="message" class="message">Loading championship run...</div>
+      <div id="message" class="message">The forest breathes. Stay alert.</div>
     </section>
 
     <nav class="controls" aria-label="Controls">
       <span><kbd>A</kbd><kbd>D</kbd> / <kbd>←</kbd><kbd>→</kbd> MOVE</span>
-      <span><kbd>SPACE</kbd> JUMP <em>(2X DOUBLE JUMP)</em></span>
-      <span><kbd>X</kbd> / <kbd>CLICK</kbd> SHOOT</span>
+      <span><kbd>SPACE</kbd> JUMP</span>
+      <span><kbd>X</kbd> / <kbd>CLICK</kbd> STRIKE</span>
       <span><kbd>R</kbd> RESET</span>
       <button id="fullscreenButton" type="button">⛶ FULLSCREEN</button>
-      <span class="secret-hint">??? <b>TYPE HIDDEN</b> ???</span>
     </nav>
 
     <div class="touch-controls">
       <button data-key="left" aria-label="Move left">◀</button>
       <button data-key="jump" aria-label="Jump">●</button>
       <button data-key="right" aria-label="Move right">▶</button>
-      <button id="fireButton" aria-label="Shoot">✦</button>
+      <button id="fireButton" aria-label="Strike">✦</button>
     </div>
-    <button id="exitSecret" class="exit-secret" type="button">↩ EXIT SECRET COURT</button>
 
-    <p class="footer">PLAY LIKE MJ <span>•</span> TAKE EVERY SHOT <span>•</span> WIN THE TITLE</p>
+    <p class="footer">BREATHE • HUNT • ENDURE</p>
   </main>
 
   <script src="js/config.js"></script>
@@ -71,9 +69,9 @@
   <script src="js/level.js"></script>
   <script src="js/collide.js"></script>
   <script src="js/player.js"></script>
+  <script src="js/features.js"></script>
   <script src="js/draw.js"></script>
   <script src="js/game.js"></script>
-  <script src="js/features.js"></script>
   <script src="js/main.js"></script>
 </body>
 </html>

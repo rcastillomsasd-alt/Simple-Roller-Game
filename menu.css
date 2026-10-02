@@ -1,8 +1,8 @@
-/* Basketball court-themed menu styling */
+/* Serene woodland menu styling */
 html, body {
   min-height: 100%;
   margin: 0;
-  background: #1a1a2e;
+  background: #223a30;
 }
 
 .menu-screen {
@@ -14,7 +14,7 @@ html, body {
   place-items: center;
   padding: 36px 20px;
   box-sizing: border-box;
-  background: radial-gradient(circle at 35% 60%, rgba(230, 126, 34, 0.15), transparent);
+  background: radial-gradient(circle at 35% 60%, rgba(159, 185, 141, 0.12), transparent);
 }
 
 .menu-screen #menuBackdrop {
@@ -32,30 +32,30 @@ html, body {
   z-index: 1;
   text-align: center;
   padding: 28px 20px;
-  border: 2px solid rgba(230, 126, 34, 0.4);
+  border: 2px solid rgba(159, 185, 141, 0.4);
   border-radius: 18px;
-  background: rgba(26, 26, 46, 0.6);
-  box-shadow: 0 0 60px rgba(230, 126, 34, 0.3), inset 0 0 20px rgba(255, 215, 0, 0.05);
+  background: rgba(24, 41, 35, 0.62);
+  box-shadow: 0 0 60px rgba(159, 185, 141, 0.18), inset 0 0 20px rgba(201, 175, 116, 0.03);
   backdrop-filter: blur(8px);
 }
 
 .menu-screen h2 {
   font-size: clamp(42px, 9vw, 90px);
   margin: 8px 0;
-  color: #e67e22;
-  text-shadow: 0 0 24px rgba(230, 126, 34, 0.7), 0 0 12px rgba(255, 215, 0, 0.4);
+  color: #9fb98d;
+  text-shadow: 0 0 24px rgba(159, 185, 141, 0.45), 0 0 12px rgba(201, 175, 116, 0.15);
   font-weight: 900;
   letter-spacing: 3px;
 }
 
 .menu-screen h2 span {
-  color: #ffd700;
-  text-shadow: 0 0 20px rgba(255, 215, 0, 0.8);
+  color: #c9af74;
+  text-shadow: 0 0 20px rgba(201, 175, 116, 0.5);
 }
 
 .menu-subtitle {
   letter-spacing: 5px;
-  color: #ffd700;
+  color: #dfead2;
   text-transform: uppercase;
   font-size: 12px;
   font-weight: bold;
@@ -63,7 +63,7 @@ html, body {
 
 .eyebrow {
   margin: 0;
-  color: #e67e22;
+  color: #9fb98d;
   letter-spacing: 5px;
   text-transform: uppercase;
   font-size: 10px;
@@ -76,9 +76,9 @@ html, body {
   margin: 14px auto;
   width: 220px;
   font-weight: bold;
-  border: 2px solid #e67e22;
-  background: rgba(26, 29, 46, 0.8);
-  color: #e67e22;
+  border: 2px solid #9fb98d;
+  background: rgba(24, 41, 35, 0.8);
+  color: #9fb98d;
   border-radius: 7px;
   padding: 10px 14px;
   cursor: pointer;
@@ -86,37 +86,37 @@ html, body {
   letter-spacing: 1px;
   text-transform: uppercase;
   transition: all 0.2s ease;
-  text-shadow: 0 0 8px rgba(230, 126, 34, 0.5);
+  text-shadow: 0 0 8px rgba(159, 185, 141, 0.25);
 }
 
 .menu-button:hover,
 .corner-menu-button:hover {
-  background: #e67e22;
-  color: #1a1a2e;
-  box-shadow: 0 0 20px rgba(230, 126, 34, 0.8);
+  background: #9fb98d;
+  color: #223a30;
+  box-shadow: 0 0 20px rgba(159, 185, 141, 0.5);
   transform: scale(1.05);
 }
 
 .menu-button.secondary {
-  color: #ffd700;
-  border-color: #ffd700;
-  text-shadow: 0 0 8px rgba(255, 215, 0, 0.5);
+  color: #c9af74;
+  border-color: #c9af74;
+  text-shadow: 0 0 8px rgba(201, 175, 116, 0.25);
 }
 
 .menu-button.secondary:hover {
-  background: #ffd700;
-  color: #1a1a2e;
-  box-shadow: 0 0 20px rgba(255, 215, 0, 0.8);
+  background: #c9af74;
+  color: #223a30;
+  box-shadow: 0 0 20px rgba(201, 175, 116, 0.45);
 }
 
 .settings-panel {
   max-width: 360px;
   margin: 22px auto;
   padding: 18px;
-  border: 2px solid #e67e22;
+  border: 2px solid #9fb98d;
   border-radius: 8px;
-  background: rgba(26, 26, 46, 0.8);
-  box-shadow: 0 0 15px rgba(230, 126, 34, 0.3);
+  background: rgba(24, 41, 35, 0.8);
+  box-shadow: 0 0 15px rgba(159, 185, 141, 0.15);
 }
 
 .settings-panel label {
@@ -127,20 +127,20 @@ html, body {
   font-size: 11px;
   letter-spacing: 1px;
   text-transform: uppercase;
-  color: #e67e22;
+  color: #9fb98d;
   font-weight: bold;
 }
 
 .settings-panel input {
   flex: 1;
-  accent-color: #e67e22;
+  accent-color: #9fb98d;
 }
 
 .settings-panel output {
   display: inline-block;
   width: 42px;
   text-align: right;
-  color: #ffd700;
+  color: #c9af74;
   font-weight: bold;
 }
 
@@ -155,7 +155,7 @@ html, body {
   height: 100vh;
   min-height: 100vh;
   padding: 5vh 5vw;
-  background: #1a1a2e;
+  background: #223a30;
   border-radius: 0;
 }
 
@@ -178,7 +178,7 @@ html, body {
 body:has(.menu-screen:fullscreen),
 body:has(.menu-screen:-webkit-full-screen) {
   overflow: hidden;
-  background: #1a1a2e;
+  background: #223a30;
 }
 
 .corner-menu-button {
